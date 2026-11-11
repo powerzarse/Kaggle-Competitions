@@ -1,0 +1,7 @@
+# Wettbewerbsdaten nicht committen (Kaggle-Regeln, Dateigröße)
+data/*
+!data/.gitkeep
+models/*
+!models/.gitkeep
+.venv/
+kaggle/submission.parquet

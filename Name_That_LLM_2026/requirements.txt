@@ -1,0 +1,17 @@
+# Daten & Analyse
+pandas
+numpy
+pyarrow
+scipy
+# Visualisierung
+matplotlib
+seaborn
+# ML
+scikit-learn
+# Notebook
+jupyter
+ipykernel
+ipywidgets
+tqdm
+# Kaggle-API
+kaggle
