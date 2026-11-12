@@ -1,0 +1,19 @@
+{
+  "id": "linuszarse/name-that-llm-svm-open-pool",
+  "title": "Name That LLM SVM Open Pool",
+  "code_file": "submission_svm_pool.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "dataset_sources": [
+    "crtproduction/name-that-llm-open-pool"
+  ],
+  "competition_sources": [
+    "name-that-llm"
+  ],
+  "kernel_sources": [],
+  "model_sources": []
+}

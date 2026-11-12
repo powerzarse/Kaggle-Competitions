@@ -1,0 +1,19 @@
+{
+  "id": "linuszarse/name-that-llm-svm-oof",
+  "title": "Name That LLM SVM OOF",
+  "code_file": "svm_oof.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "dataset_sources": [
+    "crtproduction/name-that-llm-open-pool"
+  ],
+  "competition_sources": [
+    "name-that-llm"
+  ],
+  "kernel_sources": [],
+  "model_sources": []
+}

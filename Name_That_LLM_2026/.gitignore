@@ -4,4 +4,4 @@ data/*
 models/*
 !models/.gitkeep
 .venv/
-kaggle/submission.parquet
+**/submission.parquet

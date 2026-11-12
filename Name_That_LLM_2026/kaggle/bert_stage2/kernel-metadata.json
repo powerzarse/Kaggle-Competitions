@@ -1,0 +1,19 @@
+{
+  "id": "linuszarse/name-that-llm-modernbert-stage2",
+  "title": "Name That LLM ModernBERT Stage2",
+  "code_file": "train_bert_stage2.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "dataset_sources": [],
+  "competition_sources": [
+    "name-that-llm"
+  ],
+  "kernel_sources": [
+    "linuszarse/name-that-llm-modernbert-open-pool"
+  ],
+  "model_sources": []
+}
