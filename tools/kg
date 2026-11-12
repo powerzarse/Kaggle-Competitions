@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+"""Kaggle CLI über www.kaggle.com statt api.kaggle.com.
+
+Der echte Token liegt nur im Netzwerk-Proxy der Umgebung und wird dort in den
+Authorization-Header eingesetzt. Lokal stehen deshalb nur Platzhalter.
+"""
+import os, sys
+os.environ.pop("KAGGLE_API_TOKEN", None)
+os.environ.setdefault("KAGGLE_USERNAME", "linuszarse")
+os.environ.setdefault("KAGGLE_KEY", "proxy-injected")
+import kagglesdk.kaggle_env as e
+e._env_to_endpoint[e.KaggleEnv.PROD] = "https://www.kaggle.com/api"
+from kaggle.cli import main
+sys.exit(main())
