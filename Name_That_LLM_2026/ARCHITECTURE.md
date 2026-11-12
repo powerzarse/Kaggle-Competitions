@@ -111,6 +111,8 @@ TF-IDF erkennt Typografie und Wortwahl, der Transformer eher Stil und Struktur. 
 
 Die Mischung ist robust: Der Wert gilt für viele Kombinationen, etwa Softmax-Temperatur 5 mit SVM-Gewicht 0.4–0.6 oder Temperatur 10 mit SVM-Gewicht 0.3–0.4.
 
+Nach dem Mischen gleicht ein **Sinkhorn-Ausgleich** (Stärke 0.6) die vorhergesagten Klassenanteile an. In einer Simulation auf train.csv brachte er +1,3 Punkte bei ausgewogenem Test und +0,8 bei stark unausgewogenem. Bei einem Modell, das nach Stufe 2 auf der ausgewogenen train.csv trainiert ist, ist der Gewinn kleiner. Das Abgabe-Notebook baut [`kaggle/build_notebook_ensemble.py`](kaggle/build_notebook_ensemble.py).
+
 ## Ergebnisse
 
 | Ansatz | Trainingsdaten | Balanced Accuracy | Public LB |
@@ -122,6 +124,8 @@ Die Mischung ist robust: Der Wert gilt für viele Kombinationen, etwa Softmax-Te
 | LinearSVC | Pool, 3.000 / Modell | 0.449 (Protokoll A) | – |
 | ModernBERT-base, 2 Epochen | Pool, 3.000 / Modell | 0.479 (Protokoll A) | – |
 | Mischung SVM + ModernBERT (T=5, 50/50) | Pool, 3.000 / Modell | 0.508 (Protokoll A) | – |
+| ModernBERT Stufe 1 + Stufe 2 (2 Epochen train.csv) | Pool 3.000 / Modell, dann train.csv | 0.518 (5-Fold-OOF) | – |
+| Mischung SVM + ModernBERT Stufe 2 (T=5, 50/50) | wie oben | 0.530 (OOF) | – |
 | LinearSVC | Pool, 6.000 / Modell | 0.489 (Protokoll A) | – |
 | **LinearSVC** | **kompletter Pool + train.csv** | – | **0.470** |
 
@@ -141,7 +145,9 @@ Name_That_LLM_2026/
 │   ├── svm_pool/         Abgabe: LinearSVC (CPU, offline)
 │   ├── svm_oof/          OOF der SVM auf train.csv (CPU) für Ensemble-Gewichte
 │   ├── bert_pool/        Training Stufe 1: ModernBERT auf dem Pool (GPU)
-│   └── bert_stage2/      Training Stufe 2: Feintuning auf train.csv + CV (GPU)
+│   ├── bert_stage2/      Training Stufe 2: Feintuning auf train.csv + CV (GPU)
+│   ├── lora/             LoRA auf Qwen3 (4B/8B), zweistufig, eigene LoRA-Schicht ohne peft (GPU)
+│   └── ensemble/         Abgabe: SVM + ModernBERT Stufe 2 + Sinkhorn (GPU, offline)
 ├── notebooks/01_EDA.ipynb
 ├── data/                 nicht im Git (download_data.sh)
 └── models/               OOF-Vorhersagen, nicht im Git

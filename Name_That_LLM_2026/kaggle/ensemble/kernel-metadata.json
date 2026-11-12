@@ -1,0 +1,22 @@
+{
+  "id": "linuszarse/name-that-llm-ensemble",
+  "title": "Name That LLM Ensemble",
+  "code_file": "submission_ensemble.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "machine_shape": "NvidiaTeslaT4",
+  "dataset_sources": [
+    "crtproduction/name-that-llm-open-pool"
+  ],
+  "competition_sources": [
+    "name-that-llm"
+  ],
+  "kernel_sources": [
+    "linuszarse/name-that-llm-modernbert-stage2"
+  ],
+  "model_sources": []
+}
