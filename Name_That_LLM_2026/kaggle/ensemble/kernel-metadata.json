@@ -16,7 +16,10 @@
     "name-that-llm"
   ],
   "kernel_sources": [
-    "linuszarse/name-that-llm-modernbert-stage2"
+    "linuszarse/name-that-llm-modernbert-stage2",
+    "linuszarse/name-that-llm-lora-qwen3-4b"
   ],
-  "model_sources": []
+  "model_sources": [
+    "qwen-lm/qwen-3/Transformers/4b-base/1"
+  ]
 }

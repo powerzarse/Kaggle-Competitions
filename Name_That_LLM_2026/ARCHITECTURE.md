@@ -127,7 +127,15 @@ Nach dem Mischen gleicht ein **Sinkhorn-Ausgleich** (Stärke 0.6) die vorhergesa
 | ModernBERT Stufe 1 + Stufe 2 (2 Epochen train.csv) | Pool 3.000 / Modell, dann train.csv | 0.518 (5-Fold-OOF) | – |
 | Mischung SVM + ModernBERT Stufe 2 (T=5, 50/50) | wie oben | 0.530 (OOF) | – |
 | LinearSVC | Pool, 6.000 / Modell | 0.489 (Protokoll A) | – |
-| **LinearSVC** | **kompletter Pool + train.csv** | – | **0.470** |
+| LinearSVC | kompletter Pool + train.csv | 0.502 (OOF) | 0.470 |
+| ModernBERT Stufe 1 + 2 | kompletter Pool, dann train.csv (2 Ep.) | 0.583 (OOF) | – |
+| Qwen3-4B-LoRA Stufe 1 + 2 | Pool-Tripel, dann train.csv | 0.525 (OOF) | – |
+| **Mischung SVM 0.4 + ModernBERT 0.6 (T=5)** | wie oben | 0.596 (OOF, ehrlich) | **0.565** |
+| Mischung SVM 0.4 + ModernBERT 0.4 + LoRA 0.2 (T=5) | wie oben | 0.603 (OOF, ehrlich) | ausstehend |
+
+Klassen-Bias (`src/postprocess.py`) auf der Mischung: −1,0 bis −1,2 Pp. in der CV, wird nicht verwendet.
+Abstand OOF → Public LB bisher etwa 3 Pp. Öffentliche Notebooks berichten, dass Sinkhorn, Zentrierung und Hungarian-Zuordnung
+auf dem LB verlieren (vermutlich wenige Texte je Prompt im Test), daher Abgabe ohne Sinkhorn.
 
 ## Ordnerstruktur
 

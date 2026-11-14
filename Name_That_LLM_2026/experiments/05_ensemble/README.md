@@ -13,6 +13,7 @@ Es gibt einen optimistischen und einen ehrlichen Wert aus (Gewichte je Fold auf 
 
 | Mitglieder | Beste Mischung | ehrlich |
 |---|---|---|
-| ModernBERT Stufe 2 (0.583) + SVM Pool 3000 (0.449) | T=5, BERT 0.6 / SVM 0.4 | 0.591 |
+| ModernBERT Stufe 2 (0.583) + SVM kompletter Pool (0.502) | T=5, BERT 0.6 / SVM 0.4 | 0.596 (LB 0.565) |
+| + Qwen3-4B-LoRA (0.525) | T=5, BERT 0.4 / SVM 0.4 / LoRA 0.2 | 0.603 |
 
 Das Abgabe-Notebook (`kaggle/build_notebook_ensemble.py`) nimmt die Gewichte als Parameter; `--w-lora` schaltet die Qwen-LoRA als drittes Mitglied zu.
