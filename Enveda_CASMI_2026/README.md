@@ -19,9 +19,18 @@ Aus MS/MS-Spektren die 2D-Struktur eines Moleküls vorhersagen. Je Molekül bis 
 ```
 Enveda_CASMI_2026/
 ├── kaggle/
-│   └── baseline_public_0487/   öffentliches 0.487-Notebook als Ausgangspunkt (privat gepusht)
+│   ├── baseline_public_0487/   öffentliches 0.487-Notebook (Stand 12.11.)
+│   ├── network_0488/           öffentliches 0.488-Notebook, unverändert (Abgabe 1)
+│   ├── network_0488_gnps/      0.488 + GNPS-CC0 als dritte Overlay-Bibliothek (Abgabe 2)
+│   └── build_variant_gnps.py   erzeugt network_0488_gnps/ aus network_0488/
 └── data/                       nicht im Git
 ```
+
+## Analyse (14.11.2026)
+- **Medaillengrenzen Public LB:** Bronze 0.488, Silber 0.489. Bei Gleichstand gewinnt die frühere Abgabe, und 0.487 bzw. 0.488 sind schon voll belegt.
+- **Rauschen:** Das Public LB bewertet nur ~125–130 Moleküle. Ein Molekül von Rang 2 auf Rang 1 ist dort ~0.004 wert, also mehr als der Abstand zwischen Bronze und Silber.
+- **Bestes öffentliches Notebook (heliosli, 0.489):** nicht reproduzierbar. Seine beiden Zusatzstufen (FRIGID-de-novo-Kandidaten auf Rang 2, rr3-Isomer-Reranker) laden Modelle aus nicht öffentlichen Datensätzen und werden ohne sie übersprungen.
+- **Weitere Bibliotheken:** Gegenüber train.parquet und den bisherigen Overlay-Quellen (extlib, MassBank harmonized) bringt GNPS-CC0 nur 1.141 Strukturen, die nicht im Training stehen (37 auch in keiner Overlay-Quelle). Die neue MassBank-Version bringt keine. Erwartete Wirkung von Abgabe 2 daher klein.
 
 ## Baseline
 `kaggle/baseline_public_0487/` ist eine unveränderte Kopie (Ausgaben entfernt) von
