@@ -20,4 +20,11 @@ multinomiale LogReg auf 54 Likelihood-Merkmalen, 160 Tokens) mit dem Stack. Dies
 | Klassifikator | LL allein | Stufe mass 20 % | Stufe uncertain 30 % (+fable) |
 |---|---|---|---|
 | nur train, C=0.05 (wie öffentlich) | 0.190 | 0.609 → 0.637 | 0.638 |
-| + Pool | ausstehend | | |
+| LogReg + Pool (w=1) | 0.196 | 0.638 | 0.640 |
+| HGB nur train | 0.182 | 0.638 | 0.642 |
+| **HGB + Pool (w=0.5, W=1)** → V5 | 0.189 | **0.645** | – |
+
+Pool-Lauf 1 (2026-11-15): 6 von 7 Häppchen = 5.670 Texte in 9,5 h (Flash ~2,1 s/Text, GLM-5.3 ~3,7 s/Text).
+Bootstrap über Prompts (HGB+Pool w=1 vs. LogReg, mass 20 %): +0,48 Pp., 90 %-Intervall [−0,07; +1,00], P(>0) = 0,91.
+Abdeckung der Stufe (LogReg): 5 % 0.621 · 10 % 0.631 · 15 % 0.635 · 20 % 0.637 · 30 % 0.638 → bei 20 % gesättigt.
+V5 ändert im Nachbau 8,4 % der Vorhersagen (Abbruchgrenze der Stufe: 25 %).
