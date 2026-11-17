@@ -26,7 +26,7 @@ Zeitschätzung ~20 %). Das 0.702-Notebook (V7/V8) bewertet fest 15 %. In der Sim
 
 Lokaler Test (Stufe mit Ersatz-Pipeline, die die echten Merkmale aus `ll_train.npz` liefert, 900 train-Texte):
 `post-glm.npz` hat dieselbe argmax wie die Abgabe der Stufe. Die V6-Apex überschreibt 67 Vorhersagen, die V9-Apex 3.
-Steigt die Stufe aus, sind V6 und V9 identisch.
+Steigt die Stufe aus, sind V6 und V9 identisch. Commit-Lauf auf Kaggle (17.11.) OK: Patch angewendet, keine Fehler.
 
 Push: `.venv/bin/kaggle kernels push -p kaggle/public_701/v9_postapex`
 
