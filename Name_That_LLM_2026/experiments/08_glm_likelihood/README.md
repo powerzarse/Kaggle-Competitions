@@ -28,3 +28,12 @@ Pool-Lauf 1 (2026-11-15): 6 von 7 Häppchen = 5.670 Texte in 9,5 h (Flash ~2,1 s
 Bootstrap über Prompts (HGB+Pool w=1 vs. LogReg, mass 20 %): +0,48 Pp., 90 %-Intervall [−0,07; +1,00], P(>0) = 0,91.
 Abdeckung der Stufe (LogReg): 5 % 0.621 · 10 % 0.631 · 15 % 0.635 · 20 % 0.637 · 30 % 0.638 → bei 20 % gesättigt.
 V5 ändert im Nachbau 8,4 % der Vorhersagen (Abbruchgrenze der Stufe: 25 %).
+
+## Public LB
+| Abgabe | Basis | Public LB |
+|---|---|---|
+| V4: 0.694-Fork ohne GSQ, LogReg-Klassifikator (wie öffentlich) | – | 0.685 |
+| V5: V4 + HGB + Pool (w=0.5, W=1) | V4 | 0.695 (+1,0) |
+| V6: 0.701-Notebook (alexchilton) + HGB + Pool | 0.701 | **0.707** (+0,6) |
+
+Der Klassifikator wirkt auf beiden Basen positiv, im Rahmen des LB-Rauschens (bis ~0,008) aber nicht zweifelsfrei.
