@@ -22,6 +22,7 @@ Enveda_CASMI_2026/
 │   ├── baseline_public_0487/   öffentliches 0.487-Notebook (Stand 12.11.)
 │   ├── network_0488/           öffentliches 0.488-Notebook, unverändert (Abgabe 1)
 │   ├── network_0488_gnps/      0.488 + GNPS-CC0 als dritte Overlay-Bibliothek (Abgabe 2)
+│   ├── heliosli_0495/          öffentliches 0.495-Notebook von heliosli, unverändert (Abgabe 3)
 │   └── build_variant_gnps.py   erzeugt network_0488_gnps/ aus network_0488/
 └── data/                       nicht im Git
 ```
@@ -46,3 +47,16 @@ pip install kaggle
 ../tools/kg competitions download -c enveda-CASMI26-molecule-id-mass-spectra -p data
 ../tools/kg kernels push -p kaggle/baseline_public_0487
 ```
+
+## Abgaben
+| Datum | Notebook | Public LB |
+|---|---|---|
+| 14.11. | `network_0488` (unverändert) | 0.488 |
+| 14.11. | `network_0488_gnps` | 0.488 |
+| 17.11. | `heliosli_0495` (unverändert) | ausstehend |
+
+## Stand 17.11.2026
+- 5.448 Teams. Bronze-Grenze 0.492 (Rang 544), Silber 0.492 (Rang 272), Gold 0.504 (Rang 20).
+- 513 Teams stehen genau auf 0.492. Wegen des Zeit-Tiebreaks braucht eine neue Abgabe mindestens 0.493 für Bronze.
+- Mit 0.488 von Rang 412 (15.11.) auf Rang 767 gefallen.
+- heliosli hat die Datensätze seines Notebooks veröffentlicht (FRIGID-de-novo-Kandidaten, rr3-Reranker u. a.). Damit ist das 0.495-Notebook jetzt reproduzierbar.
