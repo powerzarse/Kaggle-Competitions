@@ -152,9 +152,11 @@ GLM-5.3 / GLM-5.3-Flash bewerteten Open-Pool-Texten statt der LogReg nur auf tra
 | V4 | 0.694 | GSQ-27B-Stufe aus, damit das 9-h-Limit hält | 0.685 |
 | V5 | V4 | GLM-Klassifikator: HGB auf train + Pool (Pool-Gewicht 0.5, W = 1.0) | 0.695 (+1,0 ggü. V4) |
 | **V6** | 0.701 (alexchilton, Linie lumibee Kiro v44) | wie V5, sonst unverändert | **0.707** |
+| V7 | 0.702 (lightningv08 Soft Typography) | wie V5, sonst unverändert | ausstehend |
 
 V1–V3b laufen auf Kaggle durch, bekommen aber keinen Score (vermutlich 9-h-Limit im Bewertungslauf, daher V4 ohne GSQ).
-Code: [`kaggle/public_694/`](kaggle/public_694/README.md) (V1–V5) und [`kaggle/public_701/`](kaggle/public_701/README.md) (V6).
+Code: [`kaggle/public_694/`](kaggle/public_694/README.md) (V1–V5), [`kaggle/public_701/`](kaggle/public_701/README.md) (V6)
+und [`kaggle/public_702/`](kaggle/public_702/README.md) (V7).
 
 **Stand 17.11.2026:** Platz 115 von 6.165 Teams (Public). Grenzen: Bronze (Top 10 %) 0.698, Silber (Top 5 %, Platz 308) 0.701,
 Gold (Platz 22) 0.743, Platz 10 0.758, Platz 1 0.776. Bestes öffentliches Notebook: 0.702.
@@ -181,7 +183,8 @@ Name_That_LLM_2026/
 │   ├── ensemble/         Abgabe: SVM + ModernBERT Stufe 2 + Sinkhorn (GPU, offline)
 │   ├── glm_pool/         Pool-Texte unter GLM-5.3 / GLM-5.3-Flash bewerten (GPU, Experiment 08)
 │   ├── public_694/       Fork des 0.694-Notebooks, Varianten V1–V5
-│   └── public_701/       Fork des 0.701-Notebooks, V6 (aktuell beste Abgabe, 0.707)
+│   ├── public_701/       Fork des 0.701-Notebooks, V6 (aktuell beste Abgabe, 0.707)
+│   └── public_702/       Fork des 0.702-Notebooks (Soft Typography), V7
 ├── notebooks/01_EDA.ipynb
 ├── data/                 nicht im Git (download_data.sh)
 └── models/               OOF-Vorhersagen, nicht im Git
