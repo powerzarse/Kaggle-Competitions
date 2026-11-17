@@ -152,7 +152,7 @@ GLM-5.3 / GLM-5.3-Flash bewerteten Open-Pool-Texten statt der LogReg nur auf tra
 | V4 | 0.694 | GSQ-27B-Stufe aus, damit das 9-h-Limit hält | 0.685 |
 | V5 | V4 | GLM-Klassifikator: HGB auf train + Pool (Pool-Gewicht 0.5, W = 1.0) | 0.695 (+1,0 ggü. V4) |
 | **V6** | 0.701 (alexchilton, Linie lumibee Kiro v44) | wie V5, sonst unverändert | **0.707** |
-| V7 | 0.702 (lightningv08 Soft Typography) | wie V5, sonst unverändert | ausstehend |
+| V7 | 0.702 (lightningv08 Soft Typography) | wie V5, sonst unverändert | 0.704 |
 | V8 | V7 | Apex-Nachbearbeitung auf den Logits nach der GLM-Stufe ([Experiment 09](experiments/09_postprocess/README.md), +0,4 in der Simulation) | – |
 
 V1–V3b laufen auf Kaggle durch, bekommen aber keinen Score (vermutlich 9-h-Limit im Bewertungslauf, daher V4 ohne GSQ).

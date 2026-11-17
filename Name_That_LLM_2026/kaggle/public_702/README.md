@@ -20,6 +20,8 @@ W = 1.0, Merkmale aus `linuszarse/ntl-glm-ll-train`). Erzeugt mit:
 
 Lokaler Test der Patch-Zelle (gegen `v5_hgb_data/ll_train.npz`): identische Ausgabe wie der Commit-Lauf von V6.
 
+**Public LB 0.704** (17.11., V6 auf der 0.701-Basis: 0.707). Der Unterschied liegt im LB-Rauschen.
+
 ## V8 (`v8_postapex/`, Kaggle: `linuszarse/ntl-702-fork-v8-postapex`)
 V7 + Apex-Nachbearbeitung auf den Logits **nach** der GLM-Stufe (`post-glm.npz` statt `FINAL_LOGITS`), damit Apex
 die Korrekturen der GLM-Stufe nicht überschreibt; GLM-Labels bleiben wie im Original erhalten. Begründung und
