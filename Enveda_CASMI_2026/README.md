@@ -22,7 +22,9 @@ Enveda_CASMI_2026/
 │   ├── baseline_public_0487/   öffentliches 0.487-Notebook (Stand 12.11.)
 │   ├── network_0488/           öffentliches 0.488-Notebook, unverändert (Abgabe 1)
 │   ├── network_0488_gnps/      0.488 + GNPS-CC0 als dritte Overlay-Bibliothek (Abgabe 2)
-│   ├── heliosli_0495/          öffentliches 0.495-Notebook von heliosli, unverändert (Abgabe 3)
+│   ├── heliosli_0495/          0.495-Demo von heliosli (nicht abgebbar, siehe unten)
+│   ├── network_lam035_0492/    öffentliches 0.492-Notebook (mathleteutd, LAM 0.35), unverändert
+│   ├── anchored_rank2_pin/     0.492 + Rang-2-Absicherung (flexonafft v7), unverändert
 │   └── build_variant_gnps.py   erzeugt network_0488_gnps/ aus network_0488/
 └── data/                       nicht im Git
 ```
@@ -53,10 +55,13 @@ pip install kaggle
 |---|---|---|
 | 14.11. | `network_0488` (unverändert) | 0.488 |
 | 14.11. | `network_0488_gnps` | 0.488 |
-| 17.11. | `heliosli_0495` (unverändert) | ausstehend |
+| 17.11. | `heliosli_0495` | abgelehnt (nicht versionierte Datensätze) |
+| 17.11. | `anchored_rank2_pin` | ausstehend |
+| 17.11. | `network_lam035_0492` | ausstehend |
 
 ## Stand 17.11.2026
 - 5.448 Teams. Bronze-Grenze 0.492 (Rang 544), Silber 0.492 (Rang 272), Gold 0.504 (Rang 20).
 - 513 Teams stehen genau auf 0.492. Wegen des Zeit-Tiebreaks braucht eine neue Abgabe mindestens 0.493 für Bronze.
 - Mit 0.488 von Rang 412 (15.11.) auf Rang 767 gefallen.
-- heliosli hat die Datensätze seines Notebooks veröffentlicht (FRIGID-de-novo-Kandidaten, rr3-Reranker u. a.). Damit ist das 0.495-Notebook jetzt reproduzierbar.
+- heliosli's 0.495-Notebook ist nicht nutzbar: Kaggle lehnt die Abgabe ab, weil seine sieben Datensätze nicht versioniert sind. Wichtiger noch: Laut deren Beschreibung enthalten sie statt der trainierten Gewichte nur zufällig initialisierte Demo-Gewichte und reproduzieren das Ergebnis nicht. Kopien hochzuladen lohnt sich daher nicht.
+- Stattdessen zwei vollständig öffentliche Notebooks der 0.492-Linie: Testset-Netzwerk mit `LAM` 0.35 (Messreihe LAM 0/0.15/0.25/0.35/0.50 → 0.487/0.487/0.488/0.492/0.484) und dieselbe Basis plus Rang-2-Absicherung: Wird der Spitzenkandidat der letzten Stufe von einer späteren Stufe verdrängt, landet er auf Rang 2 statt auf Rang 3–5. Rang 1 ändert sich nie.
