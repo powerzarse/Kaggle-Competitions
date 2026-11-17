@@ -8,8 +8,14 @@ in linuszarse/ntl-glm-ll-train trainiert (kein Pickle im Datensatz -> keine skle
 `member_logp` in v1_stage.py gepatcht. Auswahl (15 %, 90.000 Tokens), Temperatur, Abbruchgrenze und die
 Apex-Nachbearbeitung bleiben unverändert.
 
+V8 (--apex-post-glm): zusätzlich rechnet die Apex-Nachbearbeitung auf den Logits *nach* der GLM-Stufe
+(post-glm.npz) statt auf den Stack-Logits davor. Sonst überschreibt Apex jede Nicht-GLM-Vorhersage mit einem
+Ergebnis, das die GLM-Stufe nie gesehen hat (Experiment 09: +0,4 Pp. in der Simulation auf train.csv).
+GLM-Labels bleiben wie im Original erhalten (corrected=False).
+
 Aufruf (aus Name_That_LLM_2026/):
-    .venv/bin/python kaggle/public_702/build_v7_hgb.py --W 1.0
+    .venv/bin/python kaggle/public_702/build_v7_hgb.py --W 1.0                 # -> v7_hgb/
+    .venv/bin/python kaggle/public_702/build_v7_hgb.py --W 1.0 --apex-post-glm # -> v8_postapex/
     .venv/bin/kaggle kernels push -p kaggle/public_702/v7_hgb
 """
 import argparse
@@ -18,7 +24,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "kaggle" / "public_702"
-OUT = SRC / "v7_hgb"
 DATASET = "linuszarse/ntl-glm-ll-train"
 HGB_PARAMS = dict(learning_rate=0.05, max_iter=300, max_leaf_nodes=15, l2_regularization=1.0,
                   min_samples_leaf=40, early_stopping=False)
@@ -81,7 +86,13 @@ def src(c):
     return c["source"] if isinstance(c["source"], str) else "".join(c["source"])
 
 
-def build(W):
+APEX_OLD = "final=apply_postprocessing(train_df,query_df,FINAL_LOGITS,str(V1_OUT/'post-glm.npz'),OUT,"
+APEX_NEW = "final=apply_postprocessing(train_df,query_df,str(V1_OUT/'post-glm.npz'),str(V1_OUT/'post-glm.npz'),OUT,"
+
+
+def build(W, apex_post_glm=False):
+    tag, name = ("v8_postapex", "V8") if apex_post_glm else ("v7_hgb", "V7")
+    OUT = SRC / tag
     nb = json.loads((SRC / "public_702.ipynb").read_text())
     meta = json.loads((SRC / "kernel-metadata.json").read_text())
     cells = [src(c) for c in nb["cells"]]
@@ -103,22 +114,35 @@ def build(W):
     compile(code, "patch", "exec")
     nb["cells"].insert(i_dir + 1, {"cell_type": "code", "metadata": {}, "execution_count": None, "outputs": [],
                                    "source": code})
+    if apex_post_glm:
+        i_apex = one(lambda s: APEX_OLD in s, "Apex-Aufruf")
+        cell = nb["cells"][i_apex + 1]   # +1: Patch-Zelle davor eingefügt
+        assert src(cell).count(APEX_OLD) == 1
+        cell["source"] = ("# ours (V8): Apex refines the logits after the GLM stage (post-glm.npz), not the stack logits\n"
+                          "# before it, so it no longer overwrites non-GLM changes of the GLM stage; GLM labels are kept\n"
+                          + src(cell).replace(APEX_OLD, APEX_NEW))
+    extra = (" Zusätzlich (V8): Die Apex-Nachbearbeitung rechnet auf den Logits nach der GLM-Stufe statt davor."
+             if apex_post_glm else "")
     nb["cells"].insert(0, {"cell_type": "markdown", "metadata": {}, "source":
-        "# Fork V7: 0.702 + GLM-Likelihood-Klassifikator (Gradient Boosting mit Open-Pool-Daten)\n\n"
+        f"# Fork {name}: 0.702 + GLM-Likelihood-Klassifikator (Gradient Boosting mit Open-Pool-Daten)\n\n"
         "Unverändert: lightningv08 *0.702 | Soft Typography + GLM + Qwen3.8-27B LoRA* (codegleich mit alexchilton "
-        "*Name That LLM 0.702: All Public + What Failed*). Unsere einzige Änderung: Die GLM-Stufe (José Padilla) nutzt "
+        f"*Name That LLM 0.702: All Public + What Failed*). {'Unsere Änderungen' if apex_post_glm else 'Unsere einzige Änderung'}: "
+        "Die GLM-Stufe (José Padilla) nutzt "
         "statt der LogReg auf train.csv ein Gradient Boosting auf train.csv + 5.670 Open-Pool-Texten, bewertet unter "
-        f"GLM-5.3 und GLM-5.3-Flash (eigener Kaggle-Lauf), Mischgewicht W = {W}. Alle Credits unten erhalten."})
+        f"GLM-5.3 und GLM-5.3-Flash (eigener Kaggle-Lauf), Mischgewicht W = {W}.{extra} Alle Credits unten erhalten."})
     OUT.mkdir(exist_ok=True)
-    (OUT / "v7_hgb.ipynb").write_text(json.dumps(nb, indent=1, ensure_ascii=False))
-    meta.update(id="linuszarse/ntl-702-fork-v7-hgb", title="NTL 702 Fork v7 hgb", code_file="v7_hgb.ipynb",
-                is_private=True, dataset_sources=meta["dataset_sources"] + [DATASET])
+    (OUT / f"{tag}.ipynb").write_text(json.dumps(nb, indent=1, ensure_ascii=False))
+    slug = tag.replace("_", "-")
+    meta.update(id=f"linuszarse/ntl-702-fork-{slug}", title=f"NTL 702 Fork {slug.replace('-', ' ')}",
+                code_file=f"{tag}.ipynb", is_private=True, dataset_sources=meta["dataset_sources"] + [DATASET])
     (OUT / "kernel-metadata.json").write_text(json.dumps(meta, indent=2) + "\n")
-    print(f"geschrieben: {OUT}/v7_hgb.ipynb ({(OUT / 'v7_hgb.ipynb').stat().st_size / 2**20:.2f} MB), "
-          f"Patch-Zelle nach Zelle {i_dir} (V1_DIR), W={W}")
+    print(f"geschrieben: {OUT}/{tag}.ipynb ({(OUT / f'{tag}.ipynb').stat().st_size / 2**20:.2f} MB), "
+          f"Patch-Zelle nach Zelle {i_dir} (V1_DIR), W={W}, Apex nach GLM-Stufe: {apex_post_glm}")
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--W", type=float, default=1.0)
-    build(ap.parse_args().W)
+    ap.add_argument("--apex-post-glm", action="store_true", help="V8: Apex auf den Logits nach der GLM-Stufe")
+    a = ap.parse_args()
+    build(a.W, a.apex_post_glm)

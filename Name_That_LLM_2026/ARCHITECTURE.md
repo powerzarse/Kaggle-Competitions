@@ -153,6 +153,7 @@ GLM-5.3 / GLM-5.3-Flash bewerteten Open-Pool-Texten statt der LogReg nur auf tra
 | V5 | V4 | GLM-Klassifikator: HGB auf train + Pool (Pool-Gewicht 0.5, W = 1.0) | 0.695 (+1,0 ggü. V4) |
 | **V6** | 0.701 (alexchilton, Linie lumibee Kiro v44) | wie V5, sonst unverändert | **0.707** |
 | V7 | 0.702 (lightningv08 Soft Typography) | wie V5, sonst unverändert | ausstehend |
+| V8 | V7 | Apex-Nachbearbeitung auf den Logits nach der GLM-Stufe ([Experiment 09](experiments/09_postprocess/README.md), +0,4 in der Simulation) | – |
 
 V1–V3b laufen auf Kaggle durch, bekommen aber keinen Score (vermutlich 9-h-Limit im Bewertungslauf, daher V4 ohne GSQ).
 Code: [`kaggle/public_694/`](kaggle/public_694/README.md) (V1–V5), [`kaggle/public_701/`](kaggle/public_701/README.md) (V6)
@@ -173,7 +174,8 @@ Name_That_LLM_2026/
 │   ├── 04_transformer/   ModernBERT lokal (MPS)
 │   ├── 05_ensemble/
 │   ├── 06_external_data/ Open Pool: Skalierung & Kombination
-│   └── 08_glm_likelihood/ GLM-Likelihood-Klassifikator mit Pool-Daten (V5/V6)
+│   ├── 08_glm_likelihood/ GLM-Likelihood-Klassifikator mit Pool-Daten (V5/V6)
+│   └── 09_postprocess/   GLM-Stufe vs. Apex-Nachbearbeitung im 0.702-Notebook (V8)
 ├── kaggle/               Notebook-Generatoren (build_notebook_*.py) + Kaggle-Metadaten
 │   ├── svm_pool/         Abgabe: LinearSVC (CPU, offline)
 │   ├── svm_oof/          OOF der SVM auf train.csv (CPU) für Ensemble-Gewichte

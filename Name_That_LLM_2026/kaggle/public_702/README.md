@@ -19,3 +19,9 @@ W = 1.0, Merkmale aus `linuszarse/ntl-glm-ll-train`). Erzeugt mit:
     .venv/bin/kaggle kernels push -p kaggle/public_702/v7_hgb
 
 Lokaler Test der Patch-Zelle (gegen `v5_hgb_data/ll_train.npz`): identische Ausgabe wie der Commit-Lauf von V6.
+
+## V8 (`v8_postapex/`, Kaggle: `linuszarse/ntl-702-fork-v8-postapex`)
+V7 + Apex-Nachbearbeitung auf den Logits **nach** der GLM-Stufe (`post-glm.npz` statt `FINAL_LOGITS`), damit Apex
+die Korrekturen der GLM-Stufe nicht überschreibt; GLM-Labels bleiben wie im Original erhalten. Begründung und
+Simulation: `experiments/09_postprocess/` (+0,4 Pp. auf train.csv). Erzeugt mit `build_v7_hgb.py --W 1.0 --apex-post-glm`.
+Die geänderte Zelle läuft im Commit-Lauf nicht (FAST_COMMIT); lokal mit Dateien im echten Format getestet.
