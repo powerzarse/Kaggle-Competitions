@@ -32,3 +32,19 @@ und das Residual sind OOF über die GroupKFold-Folds gerechnet. Merkmale kommen 
 
 Umsetzung: `kaggle/public_702/build_v7_hgb.py --apex-post-glm` → `v8_postapex/`. Einzige Änderung gegenüber V7:
 `apply_postprocessing` bekommt `post-glm.npz` statt `FINAL_LOGITS` als Basis.
+
+## Abdeckung der GLM-Stufe (Nachtrag 17.11.)
+V7 (0.702-Basis, fest 15 %) kam auf 0.704, V6 (0.701-Basis, Abdeckung nach Zeit, höchstens 30 %) auf 0.707.
+Simulation mit anderer Abdeckung (bal. acc auf train.csv, sonst wie oben):
+
+| Abdeckung | nur GLM-Stufe | Apex vorher (öffentlich) | Apex nachher (V8/V9) |
+|---|---|---|---|
+| 10 % | 0.6331 | 0.6271 | 0.6309 |
+| 15 % (0.702) | 0.6397 | 0.6334 | 0.6375 |
+| 20 % (≈ V6) | 0.6442 | 0.6379 | 0.6434 |
+| 25 % | 0.6472 | 0.6390 | 0.6472 |
+| 30 % | 0.6464 | 0.6397 | 0.6460 |
+| 40 % | 0.6464 | 0.6401 | 0.6468 |
+
+Weiche und harte Typografie (penalty 0.05 / 0) geben bei jeder Abdeckung dieselbe Zahl. Mehr Abdeckung hilft bis
+etwa 25 %, danach nicht mehr. Daher V9: die Apex-Korrektur auf der V6-Basis (`kaggle/public_701/build_v9_postapex.py`).
