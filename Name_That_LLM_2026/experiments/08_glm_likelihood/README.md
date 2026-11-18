@@ -37,3 +37,12 @@ V5 ändert im Nachbau 8,4 % der Vorhersagen (Abbruchgrenze der Stufe: 25 %).
 | V6: 0.701-Notebook (alexchilton) + HGB + Pool | 0.701 | **0.707** (+0,6) |
 
 Der Klassifikator wirkt auf beiden Basen positiv, im Rahmen des LB-Rauschens (bis ~0,008) aber nicht zweifelsfrei.
+
+## Was nicht mehr viel bringt (17.11.)
+- **Mehr Pool-Texte:** Lernkurve (HGB, Stufe mass 20 %): 0 Texte 0.6383 · 1.871 0.6409 · 3.798 0.6449 · 5.670 0.6453.
+  Ab etwa 4.000 Texten flach, ein zweiter Pool-Lauf (GPU oder Runpod) lohnt kaum.
+- **Gepaarte Token-Merkmale** (GLM-5.3 vs. Flash auf denselben Token: Differenz der Log-Wahrscheinlichkeit je Token,
+  t-Statistik, Anteil positiv, Quantile, Rangvergleich; 20 Merkmale): Beide Modelle tokenisieren identisch, die
+  Merkmale kosten zur Laufzeit nichts. Auf train allein aber nur +0,26 (HGB 0.6383 → 0.6409 bei 20 %), und für den
+  Pool gibt es keine Token-Scores (der Pool-Lauf hat nur Merkmale gespeichert). HGB + Pool bleibt besser (0.6453),
+  der Mittelwert beider hilft nicht (0.6449). Nicht umgesetzt.

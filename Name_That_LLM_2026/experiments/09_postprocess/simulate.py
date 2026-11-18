@@ -61,9 +61,13 @@ def load_modules():
 
 
 def stack_proxy(ids, labels):
-    load = lambda f: pd.read_parquet(OOF / f).set_index("id").loc[ids, labels].to_numpy(np.float64)
-    P = (0.4 * load("bert_stage2_oof.parquet") + 0.4 * softmax(load("svm_oof_decision.parquet") * 5, 1)
-         + 0.2 * load("lora_qwen3_4b_24k_oof.parquet"))
+    # zwei Ablagen derselben OOF-Dateien: flach (andere Arbeitskopie) oder in Unterordnern (wie in evaluate.py)
+    def load(flat, nested):
+        f = OOF / flat if (OOF / flat).exists() else OOF / nested
+        return pd.read_parquet(f).set_index("id").loc[ids, labels].to_numpy(np.float64)
+    P = (0.4 * load("bert_stage2_oof.parquet", "bert/oof_stage2_ep2.parquet")
+         + 0.4 * softmax(load("svm_oof_decision.parquet", "svm/svm_oof_decision.parquet") * 5, 1)
+         + 0.2 * load("lora_qwen3_4b_24k_oof.parquet", "lora/oof_stage2.parquet"))
     return np.log(np.clip(P, 1e-9, 1))
 
 

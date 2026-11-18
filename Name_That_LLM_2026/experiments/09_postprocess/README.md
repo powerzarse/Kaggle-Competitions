@@ -49,6 +49,21 @@ Simulation mit anderer Abdeckung (bal. acc auf train.csv, sonst wie oben):
 Weiche und harte Typografie (penalty 0.05 / 0) geben bei jeder Abdeckung dieselbe Zahl. Mehr Abdeckung hilft bis
 etwa 25 %, danach nicht mehr. Daher V9: die Apex-Korrektur auf der V6-Basis (`kaggle/public_701/build_v9_postapex.py`).
 
+## Mischgewicht W in der V9-Kette (Nachtrag 17.11., abends)
+Apex auf den Logits nach der GLM-Stufe, sonst wie oben:
+
+| Abdeckung | W 0.75 | W 1.0 | W 1.25 | W 1.5 | W 2.0 |
+|---|---|---|---|---|---|
+| 15 % | 0.6371 | 0.6375 | 0.6371 | 0.6386 | 0.6368 |
+| 20 % | 0.6397 | 0.6434 | 0.6431 | 0.6453 | 0.6431 |
+| 25 % | 0.6423 | 0.6472 | 0.6475 | **0.6494** | 0.6468 |
+| 30 % | 0.6409 | 0.6460 | 0.6449 | 0.6472 | 0.6423 |
+
+W = 1.5 ist in jeder Zeile vorn (+0,2 Pp.), 25 % vor 30 %. → V10 (`kaggle/public_701/build_v10_w15.py`).
+Recall je Klasse nach der V9-Kette (25 %, W 1): GLM-5.3 0.23 → 0.60, GLM-Flash 0.44 → 0.74; die schwächsten
+Klassen bleiben unberührt (Gemini-3.7-Flash 0.17, Claude-Fable-5 0.32, GPT-5.6-Sol 0.49, Kimi-K3 0.56).
+`stack_proxy` findet die OOF-Dateien jetzt in beiden Ablagen (flach oder in `bert/`, `svm/`, `lora/`).
+
 ## Public LB widerlegt die Simulation (18.11.)
 | Abgabe | Apex | W / Abdeckung | Public LB |
 |---|---|---|---|
@@ -63,4 +78,3 @@ Simulation (+0,4 bis +0,55). Vermutung: Auf dem Test sind die Verschiebungen der
 gleiche Verteilung wie die Pool-Merkmale) sieht das besser aus als auf dem Test. Der öffentliche Apex setzt
 Nicht-GLM-Vorhersagen auf den Stack zurück und filtert genau das heraus. Auch W 1.5 / 25 % schadet (V11 vs. V6: −0,5).
 Lehre: Simulationen mit unserem Ersatz-Stack nur für die GLM-Entscheidung heranziehen, nicht für Nicht-GLM-Klassen.
-

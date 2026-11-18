@@ -155,14 +155,14 @@ GLM-5.3 / GLM-5.3-Flash bewerteten Open-Pool-Texten statt der LogReg nur auf tra
 | V7 | 0.702 (lightningv08 Soft Typography) | wie V5, sonst unverändert | 0.704 |
 | V8 | V7 | Apex-Nachbearbeitung auf den Logits nach der GLM-Stufe ([Experiment 09](experiments/09_postprocess/README.md), +0,4 in der Simulation) | nicht abgegeben |
 | V9 | V6 | wie V8: Apex auf den Logits nach der GLM-Stufe (GLM-Stufe von V6 deckt ~20 % statt 15 % ab) | 0.701 |
-| V10 | V9 | + Mischgewicht W 1.5, GLM-Abdeckung höchstens 25 % (Abgabe nicht aus dem Repo) | 0.696 |
-| V11 | V6 | + W 1.5, GLM-Abdeckung höchstens 25 %, Apex unverändert (Abgabe nicht aus dem Repo) | 0.702 |
+| V10 | V9 | Mischgewicht W 1.0 → 1.5, GLM-Abdeckung höchstens 25 % (Simulation +0,2 ggü. V9, [Experiment 09](experiments/09_postprocess/README.md)) | 0.696 |
+| V11 | V6 | wie V10, aber ohne Apex-Korrektur (Absicherung) | 0.702 |
 
 V1–V3b laufen auf Kaggle durch, bekommen aber keinen Score (vermutlich 9-h-Limit im Bewertungslauf, daher V4 ohne GSQ).
-Code: [`kaggle/public_694/`](kaggle/public_694/README.md) (V1–V5), [`kaggle/public_701/`](kaggle/public_701/README.md) (V6, V9) und [`kaggle/public_702/`](kaggle/public_702/README.md) (V7, V8).
+Code: [`kaggle/public_694/`](kaggle/public_694/README.md) (V1–V5), [`kaggle/public_701/`](kaggle/public_701/README.md) (V6, V9–V11) und [`kaggle/public_702/`](kaggle/public_702/README.md) (V7, V8).
 
-**Stand 17.11.2026:** Platz 115 von 6.165 Teams (Public). Grenzen: Bronze (Top 10 %) 0.698, Silber (Top 5 %, Platz 308) 0.701,
-Gold (Platz 22) 0.743, Platz 10 0.758, Platz 1 0.776. Bestes öffentliches Notebook: 0.702.
+**Stand 17.11.2026, abends:** Platz 119 von 6.212 Teams (Public, 0.707). Grenzen: Bronze (Top 10 %) 0.701, Silber (Top 5 %, Platz 310) 0.702,
+Gold (Platz 22) 0.743, Platz 1 0.776. Für 0.72 bräuchte es Platz ~62.
 
 ## Ordnerstruktur
 
