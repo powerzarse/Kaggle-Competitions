@@ -25,6 +25,7 @@ Enveda_CASMI_2026/
 │   ├── heliosli_0495/          0.495-Demo von heliosli (nicht abgebbar, siehe unten)
 │   ├── network_lam035_0492/    öffentliches 0.492-Notebook (mathleteutd, LAM 0.35), unverändert
 │   ├── anchored_rank2_pin/     0.492 + Rang-2-Absicherung (flexonafft v7), unverändert
+│   ├── network_fr_p5_0495/     0.495 von taeyangg4 (Netzwerk D-L1 + Fragment-Reranker + P5-Tail), unverändert
 │   └── build_variant_gnps.py   erzeugt network_0488_gnps/ aus network_0488/
 └── data/                       nicht im Git
 ```
@@ -56,8 +57,9 @@ pip install kaggle
 | 14.11. | `network_0488` (unverändert) | 0.488 |
 | 14.11. | `network_0488_gnps` | 0.488 |
 | 17.11. | `heliosli_0495` | abgelehnt (nicht versionierte Datensätze) |
-| 17.11. | `anchored_rank2_pin` | ausstehend |
-| 17.11. | `network_lam035_0492` | ausstehend |
+| 18.11. | `anchored_rank2_pin` | ausstehend |
+| 18.11. | `network_lam035_0492` | ausstehend |
+| 18.11. | `network_fr_p5_0495` | ausstehend |
 
 ## Stand 17.11.2026
 - 5.448 Teams. Bronze-Grenze 0.492 (Rang 544), Silber 0.492 (Rang 272), Gold 0.504 (Rang 20).
@@ -65,3 +67,9 @@ pip install kaggle
 - Mit 0.488 von Rang 412 (15.11.) auf Rang 767 gefallen.
 - heliosli's 0.495-Notebook ist nicht nutzbar: Kaggle lehnt die Abgabe ab, weil seine sieben Datensätze nicht versioniert sind. Wichtiger noch: Laut deren Beschreibung enthalten sie statt der trainierten Gewichte nur zufällig initialisierte Demo-Gewichte und reproduzieren das Ergebnis nicht. Kopien hochzuladen lohnt sich daher nicht.
 - Stattdessen zwei vollständig öffentliche Notebooks der 0.492-Linie: Testset-Netzwerk mit `LAM` 0.35 (Messreihe LAM 0/0.15/0.25/0.35/0.50 → 0.487/0.487/0.488/0.492/0.484) und dieselbe Basis plus Rang-2-Absicherung: Wird der Spitzenkandidat der letzten Stufe von einer späteren Stufe verdrängt, landet er auf Rang 2 statt auf Rang 3–5. Rang 1 ändert sich nie.
+
+## Stand 18.11.2026
+- 5.516 Teams, eigener Rang 905 (0.488). 644 Teams genau auf 0.492, nur 132 Teams ≥ 0.493.
+- Silber-Grenze Rang 275 (0.492): Jede Abgabe ≥ 0.493 liegt damit im Silberbereich, 0.492 reicht für keine Medaille.
+- GPU-Kontingent: 6 h pro Woche, aktuell 11,7 h verbraucht (Reset 21.11.). Fast-Commits liefen trotzdem durch.
+- Bester reproduzierbarer Kandidat: taeyangg4 0.495. Beide eigenen Datensätze des Autors sind öffentlich und versioniert und enthalten echte Gewichte (Fragment-Reranker, 768k Parameter, Trainingsprotokoll). Jede Stufe einzeln belegt: 0.487 → 0.487 → 0.488 → 0.490 → 0.494 → 0.495.
