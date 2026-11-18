@@ -137,6 +137,33 @@ Klassen-Bias (`src/postprocess.py`) auf der Mischung: −1,0 bis −1,2 Pp. in d
 Abstand OOF → Public LB bisher etwa 3 Pp. Öffentliche Notebooks berichten, dass Sinkhorn, Zentrierung und Hungarian-Zuordnung
 auf dem LB verlieren (vermutlich wenige Texte je Prompt im Test), daher Abgabe ohne Sinkhorn.
 
+## Abgaben auf Basis öffentlicher Notebooks (ab 14.11.)
+
+Statt die Community-Modelle nachzubauen, laufen die Abgaben seit dem 14.11. auf öffentlichen Notebooks (alle Bausteine
+öffentlich, Credits im Notebook). Unser eigener Beitrag ist der **GLM-Likelihood-Klassifikator aus
+[Experiment 08](experiments/08_glm_likelihood/README.md)**: Gradient Boosting auf train.csv + 5.670 selbst unter
+GLM-5.3 / GLM-5.3-Flash bewerteten Open-Pool-Texten statt der LogReg nur auf train.csv.
+
+| Abgabe | Basis | Änderung | Public LB |
+|---|---|---|---|
+| V1 | 0.694 (lightningv08) | GLM-Stufe: unsichere Texte auswählen (glm, glm-flash, fable), Abdeckung 0.30 | kein Score |
+| V2 / V2b | 0.694 | GSQ-27B-Anteil 0.12 → 0.03 | kein Score |
+| V3 / V3b | 0.694 | V1 + V2 | kein Score |
+| V4 | 0.694 | GSQ-27B-Stufe aus, damit das 9-h-Limit hält | 0.685 |
+| V5 | V4 | GLM-Klassifikator: HGB auf train + Pool (Pool-Gewicht 0.5, W = 1.0) | 0.695 (+1,0 ggü. V4) |
+| **V6** | 0.701 (alexchilton, Linie lumibee Kiro v44) | wie V5, sonst unverändert | **0.707** |
+| V7 | 0.702 (lightningv08 Soft Typography) | wie V5, sonst unverändert | 0.704 |
+| V8 | V7 | Apex-Nachbearbeitung auf den Logits nach der GLM-Stufe ([Experiment 09](experiments/09_postprocess/README.md), +0,4 in der Simulation) | nicht abgegeben |
+| V9 | V6 | wie V8: Apex auf den Logits nach der GLM-Stufe (GLM-Stufe von V6 deckt ~20 % statt 15 % ab) | 0.701 |
+| V10 | V9 | Mischgewicht W 1.0 → 1.5, GLM-Abdeckung höchstens 25 % (Simulation +0,2 ggü. V9, [Experiment 09](experiments/09_postprocess/README.md)) | 0.696 |
+| V11 | V6 | wie V10, aber ohne Apex-Korrektur (Absicherung) | 0.702 |
+
+V1–V3b laufen auf Kaggle durch, bekommen aber keinen Score (vermutlich 9-h-Limit im Bewertungslauf, daher V4 ohne GSQ).
+Code: [`kaggle/public_694/`](kaggle/public_694/README.md) (V1–V5), [`kaggle/public_701/`](kaggle/public_701/README.md) (V6, V9–V11) und [`kaggle/public_702/`](kaggle/public_702/README.md) (V7, V8).
+
+**Stand 17.11.2026, abends:** Platz 119 von 6.212 Teams (Public, 0.707). Grenzen: Bronze (Top 10 %) 0.701, Silber (Top 5 %, Platz 310) 0.702,
+Gold (Platz 22) 0.743, Platz 1 0.776. Für 0.72 bräuchte es Platz ~62.
+
 ## Ordnerstruktur
 
 ```
@@ -148,14 +175,20 @@ Name_That_LLM_2026/
 │   ├── 03_hierarchical/
 │   ├── 04_transformer/   ModernBERT lokal (MPS)
 │   ├── 05_ensemble/
-│   └── 06_external_data/ Open Pool: Skalierung & Kombination
+│   ├── 06_external_data/ Open Pool: Skalierung & Kombination
+│   ├── 08_glm_likelihood/ GLM-Likelihood-Klassifikator mit Pool-Daten (V5/V6)
+│   └── 09_postprocess/   GLM-Stufe vs. Apex-Nachbearbeitung im 0.702-Notebook (V8)
 ├── kaggle/               Notebook-Generatoren (build_notebook_*.py) + Kaggle-Metadaten
 │   ├── svm_pool/         Abgabe: LinearSVC (CPU, offline)
 │   ├── svm_oof/          OOF der SVM auf train.csv (CPU) für Ensemble-Gewichte
 │   ├── bert_pool/        Training Stufe 1: ModernBERT auf dem Pool (GPU)
 │   ├── bert_stage2/      Training Stufe 2: Feintuning auf train.csv + CV (GPU)
 │   ├── lora/             LoRA auf Qwen3 (4B/8B), zweistufig, eigene LoRA-Schicht ohne peft (GPU)
-│   └── ensemble/         Abgabe: SVM + ModernBERT Stufe 2 + Sinkhorn (GPU, offline)
+│   ├── ensemble/         Abgabe: SVM + ModernBERT Stufe 2 + Sinkhorn (GPU, offline)
+│   ├── glm_pool/         Pool-Texte unter GLM-5.3 / GLM-5.3-Flash bewerten (GPU, Experiment 08)
+│   ├── public_694/       Fork des 0.694-Notebooks, Varianten V1–V5
+│   ├── public_701/       Fork des 0.701-Notebooks, V6 (aktuell beste Abgabe, 0.707)
+│   └── public_702/       Fork des 0.702-Notebooks (Soft Typography), V7
 ├── notebooks/01_EDA.ipynb
 ├── data/                 nicht im Git (download_data.sh)
 └── models/               OOF-Vorhersagen, nicht im Git

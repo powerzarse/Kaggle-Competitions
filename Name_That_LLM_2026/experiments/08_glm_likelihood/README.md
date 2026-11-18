@@ -28,3 +28,21 @@ Pool-Lauf 1 (2026-11-15): 6 von 7 Häppchen = 5.670 Texte in 9,5 h (Flash ~2,1 s
 Bootstrap über Prompts (HGB+Pool w=1 vs. LogReg, mass 20 %): +0,48 Pp., 90 %-Intervall [−0,07; +1,00], P(>0) = 0,91.
 Abdeckung der Stufe (LogReg): 5 % 0.621 · 10 % 0.631 · 15 % 0.635 · 20 % 0.637 · 30 % 0.638 → bei 20 % gesättigt.
 V5 ändert im Nachbau 8,4 % der Vorhersagen (Abbruchgrenze der Stufe: 25 %).
+
+## Public LB
+| Abgabe | Basis | Public LB |
+|---|---|---|
+| V4: 0.694-Fork ohne GSQ, LogReg-Klassifikator (wie öffentlich) | – | 0.685 |
+| V5: V4 + HGB + Pool (w=0.5, W=1) | V4 | 0.695 (+1,0) |
+| V6: 0.701-Notebook (alexchilton) + HGB + Pool | 0.701 | **0.707** (+0,6) |
+
+Der Klassifikator wirkt auf beiden Basen positiv, im Rahmen des LB-Rauschens (bis ~0,008) aber nicht zweifelsfrei.
+
+## Was nicht mehr viel bringt (17.11.)
+- **Mehr Pool-Texte:** Lernkurve (HGB, Stufe mass 20 %): 0 Texte 0.6383 · 1.871 0.6409 · 3.798 0.6449 · 5.670 0.6453.
+  Ab etwa 4.000 Texten flach, ein zweiter Pool-Lauf (GPU oder Runpod) lohnt kaum.
+- **Gepaarte Token-Merkmale** (GLM-5.3 vs. Flash auf denselben Token: Differenz der Log-Wahrscheinlichkeit je Token,
+  t-Statistik, Anteil positiv, Quantile, Rangvergleich; 20 Merkmale): Beide Modelle tokenisieren identisch, die
+  Merkmale kosten zur Laufzeit nichts. Auf train allein aber nur +0,26 (HGB 0.6383 → 0.6409 bei 20 %), und für den
+  Pool gibt es keine Token-Scores (der Pool-Lauf hat nur Merkmale gespeichert). HGB + Pool bleibt besser (0.6453),
+  der Mittelwert beider hilft nicht (0.6449). Nicht umgesetzt.
