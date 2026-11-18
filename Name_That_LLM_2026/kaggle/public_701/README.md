@@ -65,8 +65,11 @@ Zusammen mit V6 (0.707) und V9 ergibt das ein 2×2-Raster: Apex-Korrektur ja/nei
 **Public LB 0.702** (V6: 0.707). Ergebnis des Rasters: siehe `experiments/09_postprocess/README.md`.
 
 ## Herkunft der Dateien
-Der Generator für V6 lag nur auf dem Laptop und ist nicht gepusht. `v6_hgb/` wurde am 2026-11-17 per
-`kaggle kernels pull linuszarse/ntl-701-fork-v6-hgb -m` von Kaggle wiederhergestellt (genau die abgegebene Version,
-inkl. Commit-Ausgaben); in `kernel-metadata.json` ist nur `code_file` auf `v6_hgb.ipynb` angepasst.
+`v6_hgb/` wurde am 2026-11-17 per `kaggle kernels pull linuszarse/ntl-701-fork-v6-hgb -m` von Kaggle
+wiederhergestellt (genau die abgegebene Version, inkl. Commit-Ausgaben); in `kernel-metadata.json` ist nur
+`code_file` auf `v6_hgb.ipynb` angepasst. V9–V11 bauen auf dieser Fassung auf.
+Der Generator `build_v6_hgb.py` (mit `public_701.ipynb` und `original-kernel-metadata.json`) kam am 18.11. aus main
+dazu. Seine Ausgabe hat denselben Code in allen 33 Zellen; sie unterscheidet sich nur in der Reihenfolge der
+Datensätze/Modelle in `kernel-metadata.json` und hat keine Ausgaben. Ein erneuter Lauf überschreibt `v6_hgb/`.
 
 Push: `.venv/bin/kaggle kernels push -p kaggle/public_701/v6_hgb` (T4, GPU-Kontingent!)
