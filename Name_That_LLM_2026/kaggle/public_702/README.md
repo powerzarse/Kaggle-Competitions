@@ -27,3 +27,9 @@ V7 + Apex-Nachbearbeitung auf den Logits **nach** der GLM-Stufe (`post-glm.npz` 
 die Korrekturen der GLM-Stufe nicht überschreibt; GLM-Labels bleiben wie im Original erhalten. Begründung und
 Simulation: `experiments/09_postprocess/` (+0,4 Pp. auf train.csv). Erzeugt mit `build_v7_hgb.py --W 1.0 --apex-post-glm`.
 Die geänderte Zelle läuft im Commit-Lauf nicht (FAST_COMMIT); lokal mit Dateien im echten Format getestet.
+
+## Öffentliche Fassung (`public_en/`, Kaggle: `linuszarse/glm-likelihood-classifier-on-open-pool`)
+Code zellgleich mit V7, nur Zelle 0 auf Englisch (Basis, Credits, LB auf drei Basen, Fehlschläge). Eigener Kernel,
+damit keine Vorversionen in der Historie stehen. Erzeugt mit `build_public_en.py`. Commit-Lauf 18.11. OK.
+Bleibt privat, bis der Datensatz `linuszarse/ntl-glm-ll-train` öffentlich ist (nur nach Go des Users). Den Titel
+erst nach dem Score um die Zahl ergänzen (Kaggle-UI, höchstens 50 Zeichen).

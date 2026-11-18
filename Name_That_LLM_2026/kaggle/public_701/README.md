@@ -73,3 +73,21 @@ dazu. Seine Ausgabe hat denselben Code in allen 33 Zellen; sie unterscheidet sic
 Datensätze/Modelle in `kernel-metadata.json` und hat keine Ausgaben. Ein erneuter Lauf überschreibt `v6_hgb/`.
 
 Push: `.venv/bin/kaggle kernels push -p kaggle/public_701/v6_hgb` (T4, GPU-Kontingent!)
+
+## V12–V14: weniger aggressiv (18.11., `build_v12_gentle.py`)
+Je genau eine Änderung an der Patch-Zelle von V6 (Basis `v6_hgb/v6_hgb.ipynb`), Apex unverändert.
+Simulation und Begründung: `experiments/10_v6_gentle/README.md`.
+
+| Version | Ordner / Kernel | Änderung | Simulation (20 %) |
+|---|---|---|---|
+| V12 | `v12_w07` / `linuszarse/ntl-701-fork-v12-w07` | W 0.7 (≈ Temperatur aus OOF, T 1.55 → W 0.64) | −0,37 |
+| V13 | `v13_glmrest` / `linuszarse/ntl-701-fork-v13-glmrest` | `member_logp`: p(Rest)/16 für jede Nicht-GLM-Klasse | −0,26 |
+| V14 | `v14_pool025` / `linuszarse/ntl-701-fork-v14-pool025` | Pool-Gewicht 0.25 statt 0.5 | −0,04 |
+| – | `v14_sigmoid` / `linuszarse/ntl-701-fork-v14-sigmoid` | CalibratedClassifierCV sigmoid, innere GroupKFold | −0,59 (nur gebaut) |
+
+Lokaler Test: Alle Patch-Zellen laufen gegen den echten `v1_stage.py` (aus dem Payload von V6), inklusive des
+Commit-Smoke-Tests; `member_logp` gibt auf allen 2.699 train-Zeilen normierte Log-Wahrscheinlichkeiten. Commit-Läufe
+auf Kaggle (18.11.): V12, V13 und V14 Pool 0.25 (Version 2) OK, Fit 18–19 s. Die Sigmoid-Fassung brach in Version 1 ab
+(ältere sklearn auf Kaggle verlangt float64-Gewichte); Version 2 OK, Fit 92 s.
+
+Push: `.venv/bin/kaggle kernels push -p kaggle/public_701/v12_w07` (bzw. `v13_glmrest`, `v14_pool025`)
