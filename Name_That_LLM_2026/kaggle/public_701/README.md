@@ -28,6 +28,8 @@ Lokaler Test (Stufe mit Ersatz-Pipeline, die die echten Merkmale aus `ll_train.n
 `post-glm.npz` hat dieselbe argmax wie die Abgabe der Stufe. Die V6-Apex überschreibt 67 Vorhersagen, die V9-Apex 3.
 Steigt die Stufe aus, sind V6 und V9 identisch. Commit-Lauf auf Kaggle (17.11.) OK: Patch angewendet, keine Fehler.
 
+**Public LB 0.701** (V6: 0.707). Die Korrektur schadet auf dem Test, siehe `experiments/09_postprocess/README.md`.
+
 Push: `.venv/bin/kaggle kernels push -p kaggle/public_701/v9_postapex`
 
 ## Herkunft der Dateien

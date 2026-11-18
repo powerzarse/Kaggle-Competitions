@@ -48,3 +48,19 @@ Simulation mit anderer Abdeckung (bal. acc auf train.csv, sonst wie oben):
 
 Weiche und harte Typografie (penalty 0.05 / 0) geben bei jeder Abdeckung dieselbe Zahl. Mehr Abdeckung hilft bis
 etwa 25 %, danach nicht mehr. Daher V9: die Apex-Korrektur auf der V6-Basis (`kaggle/public_701/build_v9_postapex.py`).
+
+## Public LB widerlegt die Simulation (18.11.)
+| Abgabe | Apex | W / Abdeckung | Public LB |
+|---|---|---|---|
+| V6 | vorher (öffentlich) | 1.0 / Deadline, max. 30 % | **0.707** |
+| V9 | nachher | 1.0 / Deadline, max. 30 % | 0.701 |
+| V11 | vorher | 1.5 / max. 25 % | 0.702 |
+| V10 | nachher | 1.5 / max. 25 % | 0.696 |
+
+Zwei gepaarte Vergleiche, beide −0,6 Pp. für „Apex nachher“. Die Korrektur schadet auf dem Test, anders als in der
+Simulation (+0,4 bis +0,55). Vermutung: Auf dem Test sind die Verschiebungen der GLM-Stufe *zwischen Nicht-GLM-Klassen*
+überwiegend falsch. Der Klassifikator erkennt GLM gut, die übrigen 16 Klassen aber schlecht. Auf train.csv (OOF,
+gleiche Verteilung wie die Pool-Merkmale) sieht das besser aus als auf dem Test. Der öffentliche Apex setzt
+Nicht-GLM-Vorhersagen auf den Stack zurück und filtert genau das heraus. Auch W 1.5 / 25 % schadet (V11 vs. V6: −0,5).
+Lehre: Simulationen mit unserem Ersatz-Stack nur für die GLM-Entscheidung heranziehen, nicht für Nicht-GLM-Klassen.
+
