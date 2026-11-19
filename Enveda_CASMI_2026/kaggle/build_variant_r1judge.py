@@ -25,8 +25,8 @@ ROOT = Path(__file__).resolve().parent
 SRC = ROOT / "network_fr_p5_0495"
 
 VARIANTS = {  # Ordner -> (GAP, Slug, Titel)
-    "r1judge_gap150": (1.5, "casmi26-r1judge-gap150", "CASMI26 R1 Judge GAP150"),
-    "r1judge_gap075": (0.75, "casmi26-r1judge-gap075", "CASMI26 R1 Judge GAP075"),
+    "r1judge_gap150": (1.5, "casmi26-r1-judge-gap150", "CASMI26 R1 Judge GAP150"),
+    "r1judge_gap075": (0.75, "casmi26-r1-judge-gap075", "CASMI26 R1 Judge GAP075"),
 }
 
 PATCHES = [  # (alt, neu) in der FR-Zelle
