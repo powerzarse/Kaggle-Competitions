@@ -31,5 +31,6 @@ Die geänderte Zelle läuft im Commit-Lauf nicht (FAST_COMMIT); lokal mit Dateie
 ## Öffentliche Fassung (`public_en/`, Kaggle: `linuszarse/glm-likelihood-classifier-on-open-pool`)
 Code zellgleich mit V7, nur Zelle 0 auf Englisch (Basis, Credits, LB auf drei Basen, Fehlschläge). Eigener Kernel,
 damit keine Vorversionen in der Historie stehen. Erzeugt mit `build_public_en.py`. Commit-Lauf 18.11. OK.
+**Public LB 0.703** (Abgabe 18.11., Ref 58504553; V7 mit demselben Code: 0.704).
 Bleibt privat, bis der Datensatz `linuszarse/ntl-glm-ll-train` öffentlich ist (nur nach Go des Users). Den Titel
 erst nach dem Score um die Zahl ergänzen (Kaggle-UI, höchstens 50 Zeichen).

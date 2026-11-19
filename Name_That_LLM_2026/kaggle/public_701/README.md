@@ -90,4 +90,6 @@ Commit-Smoke-Tests; `member_logp` gibt auf allen 2.699 train-Zeilen normierte Lo
 auf Kaggle (18.11.): V12, V13 und V14 Pool 0.25 (Version 2) OK, Fit 18–19 s. Die Sigmoid-Fassung brach in Version 1 ab
 (ältere sklearn auf Kaggle verlangt float64-Gewichte); Version 2 OK, Fit 92 s.
 
+**Public LB (18.11.):** V12 0.704, V13 0.705, V14 0.707 (V6: 0.707). Alle im Rauschen, keine Variante schlägt V6.
+
 Push: `.venv/bin/kaggle kernels push -p kaggle/public_701/v12_w07` (bzw. `v13_glmrest`, `v14_pool025`)

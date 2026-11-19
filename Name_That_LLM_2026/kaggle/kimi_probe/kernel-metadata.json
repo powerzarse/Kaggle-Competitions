@@ -1,0 +1,22 @@
+{
+  "id": "linuszarse/ntl-kimi-likelihood-train",
+  "title": "NTL Kimi Likelihood Train",
+  "code_file": "kimi_probe.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": true,
+  "machine_shape": "NvidiaTeslaT4",
+  "dataset_sources": [
+    "xerneas/kimik3-q1-ntl-segs-a",
+    "xerneas/kimik3-q1-ntl-segs-b",
+    "xerneas/kimik3-q1-ntl-segs-c"
+  ],
+  "competition_sources": [
+    "name-that-llm"
+  ],
+  "kernel_sources": [],
+  "model_sources": []
+}

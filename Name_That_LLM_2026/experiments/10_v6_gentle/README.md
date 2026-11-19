@@ -50,7 +50,17 @@ Ref 58504553), Code identisch mit V7 (0.704), misst also auch das Rauschen. Abga
 
 | Version | Kernel | Änderung gegen V6 | Public LB |
 |---|---|---|---|
-| V12 | `linuszarse/ntl-701-fork-v12-w07` v1 (Ref 58504556) | W 0.7 | – |
-| V13 | `linuszarse/ntl-701-fork-v13-glmrest` v1 (Ref 58504560) | GLM gegen den Rest (r2) | – |
-| V14 | `linuszarse/ntl-701-fork-v14-pool025` v2 (Ref 58504563) | Pool-Gewicht 0.25 | – |
+| V12 | `linuszarse/ntl-701-fork-v12-w07` v1 (Ref 58504556) | W 0.7 | 0.704 |
+| V13 | `linuszarse/ntl-701-fork-v13-glmrest` v1 (Ref 58504560) | GLM gegen den Rest (r2) | 0.705 |
+| V14 | `linuszarse/ntl-701-fork-v14-pool025` v2 (Ref 58504563) | Pool-Gewicht 0.25 | 0.707 |
 | (Alternative) | `linuszarse/ntl-701-fork-v14-sigmoid` | kalibriert sigmoid | nicht abgegeben |
+
+Öffentliche Fassung (V7-Code): **0.703** (V7 am 17.11.: 0.704).
+
+## Ergebnis auf dem LB (18.11. abends)
+Alle Varianten landen im Band 0.702–0.707 um V6 (0.707). Zusammen mit V11 (W 1.5, 0.702) ergibt das:
+W 0.7 → 0.704, W 1.0 → 0.707, W 1.5 → 0.702. Die Mitte ist knapp vorn, aber jeder Abstand liegt im Rauschen.
+GLM gegen den Rest und Pool-Gewicht ändern nichts Messbares. Die Wiederholung von V7 (0.704 → 0.703) zeigt, dass
+fester Code mit fester Abdeckung (15 %) auf etwa ±0,001 reproduziert.
+**Folgerung:** Am GLM-Klassifikator ist nichts mehr zu holen. V6 (W 1.0, Pool 0.5) bleibt die Basis. Der nächste
+Hebel muss ein neues Signal sein, siehe Experiment 11 (Kimi-K3-Likelihood).

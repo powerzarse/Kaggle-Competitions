@@ -157,6 +157,10 @@ GLM-5.3 / GLM-5.3-Flash bewerteten Open-Pool-Texten statt der LogReg nur auf tra
 | V9 | V6 | wie V8: Apex auf den Logits nach der GLM-Stufe (GLM-Stufe von V6 deckt ~20 % statt 15 % ab) | 0.701 |
 | V10 | V9 | Mischgewicht W 1.0 → 1.5, GLM-Abdeckung höchstens 25 % (Simulation +0,2 ggü. V9, [Experiment 09](experiments/09_postprocess/README.md)) | 0.696 |
 | V11 | V6 | wie V10, aber ohne Apex-Korrektur (Absicherung) | 0.702 |
+| V7 öffentlich | V7 | Code wie V7, englische Beschreibung (Kernel `glm-likelihood-classifier-on-open-pool`, privat) | 0.703 |
+| V12 | V6 | Mischgewicht W 0.7 ([Experiment 10](experiments/10_v6_gentle/README.md)) | 0.704 |
+| V13 | V6 | „GLM gegen den Rest“: Klassifikator gibt jeder Nicht-GLM-Klasse p(Rest)/16 | 0.705 |
+| V14 | V6 | Pool-Gewicht 0.25 statt 0.5 | 0.707 |
 
 V1–V3b laufen auf Kaggle durch, bekommen aber keinen Score (vermutlich 9-h-Limit im Bewertungslauf, daher V4 ohne GSQ).
 Code: [`kaggle/public_694/`](kaggle/public_694/README.md) (V1–V5), [`kaggle/public_701/`](kaggle/public_701/README.md) (V6, V9–V11) und [`kaggle/public_702/`](kaggle/public_702/README.md) (V7, V8).
