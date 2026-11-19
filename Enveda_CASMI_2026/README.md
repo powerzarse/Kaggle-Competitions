@@ -26,6 +26,7 @@ Enveda_CASMI_2026/
 │   ├── network_lam035_0492/    öffentliches 0.492-Notebook (mathleteutd, LAM 0.35), unverändert
 │   ├── anchored_rank2_pin/     0.492 + Rang-2-Absicherung (flexonafft v7), unverändert
 │   ├── network_fr_p5_0495/     0.495 von taeyangg4 (Netzwerk D-L1 + Fragment-Reranker + P5-Tail), unverändert
+│   ├── build_variant_r1judge.py  erzeugt r1judge_gap150/ und r1judge_gap075/ (Baustein A)
 │   └── build_variant_gnps.py   erzeugt network_0488_gnps/ aus network_0488/
 └── data/                       nicht im Git
 ```
@@ -78,3 +79,32 @@ pip install kaggle
 - **Rang 132 von 5.528 mit 0.495** (taeyangg4-Notebook, reproduziert). Silber reicht bis Rang 276, Bronze bis 552, Gold ab 0.505 (Rang 21).
 - Die Rang-2-Absicherung hat auf der 0.492-Basis nichts bewegt (beide 0.492).
 - Vorläufig: Medaillen vergibt am 14.12. das private Leaderboard (~270 Moleküle).
+
+## Gold-Plan (ab 19.11.2026)
+Ziel: Gold, also ≥ 0.505 public bzw. Top 21 privat. Abstand zu 0.495: +0.010, auf dem Public LB 2–3 Moleküle.
+
+**Was frühere Versuche anderer gezeigt haben** (flexonafft, 18 Versionen mit je einer Änderung): Änderungen, die kalibrierte
+Teile in Ruhe lassen, enden unentschieden. Andere Eingaben für kalibrierte Teile (LightGBM-Ranker, PubChem-Kanal) und
+zusätzliche Bibliotheken direkt auf Rang 1 verlieren (-0.009 bis -0.015). Gewinne kamen nur von **neuen Signalen**.
+
+**Wo Punkte verloren gehen** und welcher Baustein ansetzt:
+
+| Fehlerart | Baustein | Status |
+|---|---|---|
+| Richtiger Kandidat in der Liste, aber nicht auf Rang 1 | **A · Rang-1-Richter**: FR-Scores entscheiden eng begrenzt über Rang 1 ↔ 2 | 2 Abgaben (GAP 1.5 und 0.75) |
+| Richtiger Kandidat fehlt ganz (neue Strukturen, Klasse 3) | **B · de-novo-Kandidaten**: öffentliche FRIGID-Checkpoints, bester Vorschlag auf Rang 2 nur bei hoher Fingerprint-Ähnlichkeit (≥ 0.7) | ab 21.11. (braucht GPU) |
+| Richtiger Kandidat auf Rang 3–25 | FR 3-25 und P5 (taeyangg4) | vorhanden |
+
+**Validierung:** Der Testdatensatz mit 250 Naturstoffen ist für Rang-1-Fragen ungeeignet, weil Pipeline und FR diese
+Moleküle im Training gesehen haben (Rang 1 zu 92–95 % richtig). Deshalb wird auf dem Leaderboard gemessen: immer eine
+Änderung pro Abgabe auf derselben Basis (0.495), Bausteine in zwei Dosierungen, damit die Richtung des Effekts sichtbar wird.
+
+**Zeitplan:**
+- 19.11.: Baustein A in zwei Dosierungen.
+- 21.–27.11.: Baustein B. Erst lokal auf wenigen Molekülen testen, dann ein bis zwei Abgaben.
+- bis 07.12.: beste Kombination, Entscheidung über einen Team-Merge (Merge-Frist).
+- 07.–14.12.: Finale Auswahl: eine starke und eine robuste Abgabe.
+
+**Grenzen:** 5 Abgaben pro Tag, GPU-Kontingent 6 h pro Woche (Name That LLM teilt es sich). Ein Molekül ist auf dem
+Public LB ~0.004 wert, Einzelergebnisse sind deshalb verrauscht. Die Top-10-Teams nutzen nach Angaben aus der Community
+keine öffentlichen Notebooks. Gold ist möglich, aber nicht wahrscheinlich, Silber ist der realistische Stand.
