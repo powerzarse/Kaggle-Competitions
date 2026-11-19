@@ -161,9 +161,13 @@ GLM-5.3 / GLM-5.3-Flash bewerteten Open-Pool-Texten statt der LogReg nur auf tra
 | V12 | V6 | Mischgewicht W 0.7 ([Experiment 10](experiments/10_v6_gentle/README.md)) | 0.704 |
 | V13 | V6 | „GLM gegen den Rest“: Klassifikator gibt jeder Nicht-GLM-Klasse p(Rest)/16 | 0.705 |
 | V14 | V6 | Pool-Gewicht 0.25 statt 0.5 | 0.707 |
+| V6 Wdh. | V6 | identischer Code, Rauschmessung (18.11.) | 0.707 |
+| V15 | V6 | Familien-Spezialist (TF-IDF + LR je Familie auf dem Open Pool) als Apex-Evidenz, t 1.0, Stärke 0.25 ([Experiment 12](experiments/12_family_specialist/README.md), Simulation +0,69) | ausstehend |
+| V16 | V6 | wie V15, Stärke 0.15 (Simulation +0,37) | ausstehend |
+| V17 | V6 | wie V15, t 1.5, Stärke 0.20 (Simulation +0,74) | ausstehend |
 
 V1–V3b laufen auf Kaggle durch, bekommen aber keinen Score (vermutlich 9-h-Limit im Bewertungslauf, daher V4 ohne GSQ).
-Code: [`kaggle/public_694/`](kaggle/public_694/README.md) (V1–V5), [`kaggle/public_701/`](kaggle/public_701/README.md) (V6, V9–V11) und [`kaggle/public_702/`](kaggle/public_702/README.md) (V7, V8).
+Code: [`kaggle/public_694/`](kaggle/public_694/README.md) (V1–V5), [`kaggle/public_701/`](kaggle/public_701/README.md) (V6, V9–V17) und [`kaggle/public_702/`](kaggle/public_702/README.md) (V7, V8).
 
 **Stand 17.11.2026, abends:** Platz 119 von 6.212 Teams (Public, 0.707). Grenzen: Bronze (Top 10 %) 0.701, Silber (Top 5 %, Platz 310) 0.702,
 Gold (Platz 22) 0.743, Platz 1 0.776. Für 0.72 bräuchte es Platz ~62.

@@ -93,3 +93,21 @@ auf Kaggle (18.11.): V12, V13 und V14 Pool 0.25 (Version 2) OK, Fit 18–19 s. D
 **Public LB (18.11.):** V12 0.704, V13 0.705, V14 0.707 (V6: 0.707). Alle im Rauschen, keine Variante schlägt V6.
 
 Push: `.venv/bin/kaggle kernels push -p kaggle/public_701/v12_w07` (bzw. `v13_glmrest`, `v14_pool025`)
+
+## V15–V17: Familien-Spezialist in Apex (19.11., `build_v15_spec.py`)
+V6 + Familien-Spezialist ([Experiment 12](../../experiments/12_family_specialist/README.md)): je Familie (Claude,
+GPT, Gemini) TF-IDF + logistische Regression auf bis zu 15.000 Open-Pool-Texten je Klasse, privater Datensatz
+`linuszarse/ntl-family-spec` (ohne Pickle, Smoke-Test gegen `reference.npz` im Commit). Apex nutzt
+Geschwister-LR × Spezialist^t mit Stärke s; scheitert der Spezialist, verhält sich die Zelle wie V6.
+
+| Version | Ordner / Kernel | t | Stärke | Simulation | Ref | Public LB |
+|---|---|---|---|---|---|---|
+| V15 | `v15_spec` / `linuszarse/ntl-701-fork-v15-spec` | 1.0 | 0.25 | +0,69 | 58554338 | ausstehend |
+| V16 | `v16_spec015` / `linuszarse/ntl-701-fork-v16-spec015` | 1.0 | 0.15 | +0,37 | 58554345 | ausstehend |
+| V17 | `v17_spec_t15` / `linuszarse/ntl-701-fork-v17-spec-t15` | 1.5 | 0.20 | +0,74 | 58555074 | ausstehend |
+
+Abgegeben am 19.11. um 09:53 / 09:53 / 10:13 UTC. Bau: `.venv/bin/python kaggle/public_701/build_v15_spec.py
+--name v15_spec --t 1.0 --strength 0.25`, Push `.venv/bin/kaggle kernels push -p kaggle/public_701/v15_spec`.
+`build_v6_knobs.py` (Sinkhorn, Zielmischung, Apex-Stärke) ist gebaut, aber ungenutzt: Die Simulation zeigt dort
+keinen Hebel.
+
