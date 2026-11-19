@@ -61,6 +61,8 @@ pip install kaggle
 | 18.11. | `anchored_rank2_pin` | 0.492 |
 | 18.11. | `network_lam035_0492` | 0.492 |
 | 18.11. | `network_fr_p5_0495` | **0.495** (Rang 132 von 5.528, Silberbereich) |
+| 19.11. | `r1judge_gap150` (Baustein A, streng) | 0.495 |
+| 19.11. | `r1judge_gap075` (Baustein A, locker) | 0.495 |
 
 ## Stand 17.11.2026
 - 5.448 Teams. Bronze-Grenze 0.492 (Rang 544), Silber 0.492 (Rang 272), Gold 0.504 (Rang 20).
@@ -91,7 +93,7 @@ zusätzliche Bibliotheken direkt auf Rang 1 verlieren (-0.009 bis -0.015). Gewin
 
 | Fehlerart | Baustein | Status |
 |---|---|---|
-| Richtiger Kandidat in der Liste, aber nicht auf Rang 1 | **A · Rang-1-Richter**: FR-Scores entscheiden eng begrenzt über Rang 1 ↔ 2 | 2 Abgaben (GAP 1.5 und 0.75) |
+| Richtiger Kandidat in der Liste, aber nicht auf Rang 1 | **A · Rang-1-Richter**: FR-Scores entscheiden eng begrenzt über Rang 1 ↔ 2 | beide Dosierungen 0.495 = Kontrolle, auf dem Public LB kein Effekt |
 | Richtiger Kandidat fehlt ganz (neue Strukturen, Klasse 3) | **B · de-novo-Kandidaten**: öffentliche FRIGID-Checkpoints, bester Vorschlag auf Rang 2 nur bei hoher Fingerprint-Ähnlichkeit (≥ 0.7) | ab 21.11. (braucht GPU) |
 | Richtiger Kandidat auf Rang 3–25 | FR 3-25 und P5 (taeyangg4) | vorhanden |
 
@@ -108,3 +110,10 @@ Moleküle im Training gesehen haben (Rang 1 zu 92–95 % richtig). Deshalb wird 
 **Grenzen:** 5 Abgaben pro Tag, GPU-Kontingent 6 h pro Woche (Name That LLM teilt es sich). Ein Molekül ist auf dem
 Public LB ~0.004 wert, Einzelergebnisse sind deshalb verrauscht. Die Top-10-Teams nutzen nach Angaben aus der Community
 keine öffentlichen Notebooks. Gold ist möglich, aber nicht wahrscheinlich, Silber ist der realistische Stand.
+
+## Stand 19.11.2026 (abends)
+- Baustein A: GAP 1.5 und GAP 0.75 beide 0.495, genau wie die Kontrolle. Auf den ~125 Public-Molekülen hat der Richter
+  entweder kaum getauscht oder Gewinne und Verluste haben sich aufgehoben. Kein messbarer Gewinn; auf dem privaten Teil
+  offen. Nicht weiter verfolgen, solange es kein besseres Rang-1-Signal gibt.
+- 5.601 Teams, 476 Teams ≥ 0.495 (viele Kopien des taeyangg4-Notebooks). Silbergrenze Rang 280 bei 0.495, eigener
+  Rang 175. Gold ab 0.506.
