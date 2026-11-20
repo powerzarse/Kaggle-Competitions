@@ -102,11 +102,12 @@ Geschwister-LR × Spezialist^t mit Stärke s; scheitert der Spezialist, verhält
 
 | Version | Ordner / Kernel | t | Stärke | Simulation | Ref | Public LB |
 |---|---|---|---|---|---|---|
-| V15 | `v15_spec` / `linuszarse/ntl-701-fork-v15-spec` | 1.0 | 0.25 | +0,69 | 58554338 | ausstehend |
-| V16 | `v16_spec015` / `linuszarse/ntl-701-fork-v16-spec015` | 1.0 | 0.15 | +0,37 | 58554345 | ausstehend |
-| V17 | `v17_spec_t15` / `linuszarse/ntl-701-fork-v17-spec-t15` | 1.5 | 0.20 | +0,74 | 58555074 | ausstehend |
+| V15 | `v15_spec` / `linuszarse/ntl-701-fork-v15-spec` | 1.0 | 0.25 | +0,69 | 58554338 | 0.697 |
+| V16 | `v16_spec015` / `linuszarse/ntl-701-fork-v16-spec015` | 1.0 | 0.15 | +0,37 | 58554345 | 0.702 |
+| V17 | `v17_spec_t15` / `linuszarse/ntl-701-fork-v17-spec-t15` | 1.5 | 0.20 | +0,74 | 58555074 | 0.697 |
 
-Abgegeben am 19.11. um 09:53 / 09:53 / 10:13 UTC. Bau: `.venv/bin/python kaggle/public_701/build_v15_spec.py
+**Public LB (19.11.): V15 0.697, V16 0.702, V17 0.697 (V6 0.707).** Alle schlechter, umso mehr, je stärker der
+Spezialist wirkt. Abgegeben am 19.11. um 09:53 / 09:53 / 10:13 UTC. Bau: `.venv/bin/python kaggle/public_701/build_v15_spec.py
 --name v15_spec --t 1.0 --strength 0.25`, Push `.venv/bin/kaggle kernels push -p kaggle/public_701/v15_spec`.
 `build_v6_knobs.py` (Sinkhorn, Zielmischung, Apex-Stärke) ist gebaut, aber ungenutzt: Die Simulation zeigt dort
 keinen Hebel.

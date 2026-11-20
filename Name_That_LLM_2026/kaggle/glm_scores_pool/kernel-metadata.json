@@ -1,0 +1,25 @@
+{
+  "id": "linuszarse/ntl-glm-scores-pool512",
+  "title": "NTL GLM Scores Pool512",
+  "code_file": "ntl-glm-scores-pool512.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "machine_shape": "NvidiaTeslaT4",
+  "dataset_sources": [
+    "crtproduction/name-that-llm-open-pool",
+    "jamesliebel/glm53-iq3xxs-segs-a-mirror",
+    "jamesliebel/glm53-iq3xxs-segs-b-mirror",
+    "jamesliebel/glm53-flash-iq3xxs-segs-mirror"
+  ],
+  "competition_sources": [
+    "name-that-llm"
+  ],
+  "kernel_sources": [
+    "estopadilla/ntl-glm-likelihood-train"
+  ],
+  "model_sources": []
+}

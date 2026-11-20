@@ -162,9 +162,11 @@ GLM-5.3 / GLM-5.3-Flash bewerteten Open-Pool-Texten statt der LogReg nur auf tra
 | V13 | V6 | „GLM gegen den Rest“: Klassifikator gibt jeder Nicht-GLM-Klasse p(Rest)/16 | 0.705 |
 | V14 | V6 | Pool-Gewicht 0.25 statt 0.5 | 0.707 |
 | V6 Wdh. | V6 | identischer Code, Rauschmessung (18.11.) | 0.707 |
-| V15 | V6 | Familien-Spezialist (TF-IDF + LR je Familie auf dem Open Pool) als Apex-Evidenz, t 1.0, Stärke 0.25 ([Experiment 12](experiments/12_family_specialist/README.md), Simulation +0,69) | ausstehend |
-| V16 | V6 | wie V15, Stärke 0.15 (Simulation +0,37) | ausstehend |
-| V17 | V6 | wie V15, t 1.5, Stärke 0.20 (Simulation +0,74) | ausstehend |
+| V15 | V6 | Familien-Spezialist (TF-IDF + LR je Familie auf dem Open Pool) als Apex-Evidenz, t 1.0, Stärke 0.25 ([Experiment 12](experiments/12_family_specialist/README.md), Simulation +0,69) | 0.697 |
+| V16 | V6 | wie V15, Stärke 0.15 (Simulation +0,37) | 0.702 |
+| V17 | V6 | wie V15, t 1.5, Stärke 0.20 (Simulation +0,74) | 0.697 |
+
+V15–V17: Der Spezialist schadet auf dem LB umso mehr, je stärker er wirkt (−0,5 bis −1,0), entgegen der Simulation (+0,4 bis +0,7). Zweite Widerlegung der Ersatz-Stack-Simulation für Nicht-GLM-Entscheidungen.
 
 V1–V3b laufen auf Kaggle durch, bekommen aber keinen Score (vermutlich 9-h-Limit im Bewertungslauf, daher V4 ohne GSQ).
 Code: [`kaggle/public_694/`](kaggle/public_694/README.md) (V1–V5), [`kaggle/public_701/`](kaggle/public_701/README.md) (V6, V9–V17) und [`kaggle/public_702/`](kaggle/public_702/README.md) (V7, V8).

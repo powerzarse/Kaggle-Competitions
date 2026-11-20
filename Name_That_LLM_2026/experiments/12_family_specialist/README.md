@@ -44,9 +44,9 @@ prüft das im Notebook (auch im Commit).
 ## Abgaben (`kaggle/public_701/build_v15_spec.py`)
 | Version | t | Stärke | Simulation | Public LB |
 |---|---|---|---|---|
-| V15 `ntl-701-fork-v15-spec` v1 (Ref 58554338) | 1.0 | 0.25 | +0,69 | – |
-| V16 `ntl-701-fork-v16-spec015` v1 (Ref 58554345) | 1.0 | 0.15 | +0,37 | – |
-| V17 `ntl-701-fork-v17-spec-t15` v1 (Ref 58555074) | 1.5 | 0.20 | +0,74 | – |
+| V15 `ntl-701-fork-v15-spec` v1 (Ref 58554338) | 1.0 | 0.25 | +0,69 | **0.697** (−1,0) |
+| V16 `ntl-701-fork-v16-spec015` v1 (Ref 58554345) | 1.0 | 0.15 | +0,37 | **0.702** (−0,5) |
+| V17 `ntl-701-fork-v17-spec-t15` v1 (Ref 58555074) | 1.5 | 0.20 | +0,74 | **0.697** (−1,0) |
 
 Lokal gegen die echten Zellen getestet (train.csv als Test): 112 / 66 / 109 Vorhersagen anders als V6.
 Commit-Läufe 19.11. OK, Smoke-Test auf dem Kaggle-Image: Abweichung zur lokalen Referenz 4e-16.
@@ -96,3 +96,18 @@ den Pool-Texten der Gruppe, danach innerhalb der Gruppe neu entscheiden (log p n
 
 TF-IDF ist hier deutlich schwächer als Stack und GLM-Likelihood, kein Hebel. Die Prior-Korrektur für
 Gemini-3.7-Flash ist in Experiment 13 beschrieben (verworfen).
+
+## Ergebnis auf dem LB (20.11.): verworfen
+V15 0.697, V16 0.702, V17 0.697 gegen V6 0.707 (reproduziert auf ±0,001). Die Wirkung kehrt sich um und wächst mit
+der Stärke: Stärke 0.15 −0,5, Stärke 0.20–0.25 −1,0, statt +0,4 bis +0,7 in der Simulation. Das ist nach „Apex nach
+der GLM-Stufe“ (Experiment 09, 2× −0,6) die zweite Widerlegung des Ersatz-Stacks bei Nicht-GLM-Entscheidungen.
+
+Mögliche Gründe (nicht geprüft):
+- Der echte Stack ist innerhalb der Familien deutlich stärker als unser OOF-Ersatz (Ersatz-Kette 0.638, echter Stack
+  ~0.70 auf dem LB). Evidenz, die dem Ersatz hilft, überstimmt beim echten Stack richtige Entscheidungen.
+- Der Spezialist ist nur auf dem Open Pool trainiert. Die Geschwister-LR von Apex (auf train.csv trainiert) hilft auf
+  dem LB (lumibee 0.696 → 0.701), der Pool-Spezialist schadet. Der Test könnte train.csv näher sein als dem Pool.
+
+Folgerung: Nicht-GLM-Entscheidungen nicht mehr über `stack_proxy` bewerten. Die Richtung (auch LLM-Spezialist,
+Gruppen-Spezialisten, Prior-Korrektur) ist beendet.
+
