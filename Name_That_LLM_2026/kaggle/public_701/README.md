@@ -112,3 +112,15 @@ Spezialist wirkt. Abgegeben am 19.11. um 09:53 / 09:53 / 10:13 UTC. Bau: `.venv/
 `build_v6_knobs.py` (Sinkhorn, Zielmischung, Apex-Stärke) ist gebaut, aber ungenutzt: Die Simulation zeigt dort
 keinen Hebel.
 
+
+## V18/V19: GLM-Stufe mit 256 Tokens (20.11., `build_v18_l256.py`, Experiment 14)
+V18 `v18_l256` / `linuszarse/ntl-701-fork-v18-l256` (öffentlicher LR-256-Kopf, Commit-Lauf OK) und V19 `v19_mix050`
+(0.5 HGB-160 + 0.5 LR-256, lokal getestet, kein Commit-Lauf). Nicht abgegeben: Simulation −0,5 bis −0,7 bzw. −0,3 bis
+−0,6, weil V6 nach Restzeit abdeckt und die Abdeckung bei 256 Tokens von 20 % auf 16,7 % sinkt.
+
+## V20: Familien-Spezialist nur auf train.csv (20.11., `build_v20_trainspec.py`, Experiment 15)
+`v20_trainspec` / `linuszarse/ntl-701-fork-v20-trainspec`: LB-Gegenprobe zu V15. Gleicher Eingriff (Apex-Evidenz =
+Geschwister-LR × Spezialist^t), Spezialist aber zur Laufzeit auf train.csv gefittet (TF-IDF Wort 1-2 + Zeichen 2-5,
+LR C 4), t 1.0, Stärke 0.35 (in der Kette 112 Änderungen gegen 118 bei V15). Kein Datensatz nötig. Lokal gegen die
+echten Zellen getestet. Push am 20.11. abgelehnt (GPU-Wochenkontingent 30 h erschöpft), Commit-Lauf steht aus.
+Bau: `.venv/bin/python kaggle/public_701/build_v20_trainspec.py`, Push `.venv/bin/kaggle kernels push -p kaggle/public_701/v20_trainspec`.

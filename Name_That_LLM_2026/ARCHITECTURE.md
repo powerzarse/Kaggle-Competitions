@@ -165,11 +165,16 @@ GLM-5.3 / GLM-5.3-Flash bewerteten Open-Pool-Texten statt der LogReg nur auf tra
 | V15 | V6 | Familien-Spezialist (TF-IDF + LR je Familie auf dem Open Pool) als Apex-Evidenz, t 1.0, Stärke 0.25 ([Experiment 12](experiments/12_family_specialist/README.md), Simulation +0,69) | 0.697 |
 | V16 | V6 | wie V15, Stärke 0.15 (Simulation +0,37) | 0.702 |
 | V17 | V6 | wie V15, t 1.5, Stärke 0.20 (Simulation +0,74) | 0.697 |
+| V18 | V6 | GLM-Stufe liest 256 statt 160 Tokens, öffentlicher LR-256-Kopf (wie omerfarukmerey 0.706, [Experiment 14](experiments/14_glm_256/README.md), Simulation −0,5 bis −0,7) | nicht abgegeben |
+| V19 | V6 | wie V18, Kopf = 0.5 × unser HGB-160 + 0.5 × LR-256 (Simulation −0,3 bis −0,6) | nicht abgegeben |
+| V20 | V6 | Gegenprobe zu V15: gleicher Eingriff, Spezialist aber zur Laufzeit nur auf train.csv gefittet, t 1.0, Stärke 0.35 (gleich viele Änderungen wie V15, [Experiment 15](experiments/15_train_spec/README.md), Simulation −0,3) | gebaut, Commit offen (GPU-Wochenkontingent) |
 
 V15–V17: Der Spezialist schadet auf dem LB umso mehr, je stärker er wirkt (−0,5 bis −1,0), entgegen der Simulation (+0,4 bis +0,7). Zweite Widerlegung der Ersatz-Stack-Simulation für Nicht-GLM-Entscheidungen.
 
+V18/V19: Der längere Schnitt hilft nur bei fester Abdeckung (+0,2 bis +0,3). V6 deckt nach Restzeit ab, bei 256 Tokens sinkt die Abdeckung von 20 % auf 16,7 %, und der Gewinn ist weg. Außerdem ist unser HGB mit Pool-Daten mehr wert als der längere Schnitt.
+
 V1–V3b laufen auf Kaggle durch, bekommen aber keinen Score (vermutlich 9-h-Limit im Bewertungslauf, daher V4 ohne GSQ).
-Code: [`kaggle/public_694/`](kaggle/public_694/README.md) (V1–V5), [`kaggle/public_701/`](kaggle/public_701/README.md) (V6, V9–V17) und [`kaggle/public_702/`](kaggle/public_702/README.md) (V7, V8).
+Code: [`kaggle/public_694/`](kaggle/public_694/README.md) (V1–V5), [`kaggle/public_701/`](kaggle/public_701/README.md) (V6, V9–V20) und [`kaggle/public_702/`](kaggle/public_702/README.md) (V7, V8).
 
 **Stand 17.11.2026, abends:** Platz 119 von 6.212 Teams (Public, 0.707). Grenzen: Bronze (Top 10 %) 0.701, Silber (Top 5 %, Platz 310) 0.702,
 Gold (Platz 22) 0.743, Platz 1 0.776. Für 0.72 bräuchte es Platz ~62.
@@ -187,7 +192,11 @@ Name_That_LLM_2026/
 │   ├── 05_ensemble/
 │   ├── 06_external_data/ Open Pool: Skalierung & Kombination
 │   ├── 08_glm_likelihood/ GLM-Likelihood-Klassifikator mit Pool-Daten (V5/V6)
-│   └── 09_postprocess/   GLM-Stufe vs. Apex-Nachbearbeitung im 0.702-Notebook (V8)
+│   ├── 09_postprocess/   GLM-Stufe vs. Apex-Nachbearbeitung im 0.702-Notebook (V8)
+│   ├── 10_v6_gentle/ … 13_prior_correction/   Varianten von V6 (V12–V17), alle verworfen
+│   ├── 14_glm_256/       GLM-Stufe mit 256 Tokens, train-Token-Scores bei 512 (V18/V19, nicht abgegeben)
+│   ├── 15_train_spec/    Familien-Spezialist nur auf train.csv, LB-Gegenprobe zu V15 (V20)
+│   └── 16_paired_tokens/ gepaarte Token-Merkmale GLM-5.3 gegen Flash für den V6-Kopf (verworfen)
 ├── kaggle/               Notebook-Generatoren (build_notebook_*.py) + Kaggle-Metadaten
 │   ├── svm_pool/         Abgabe: LinearSVC (CPU, offline)
 │   ├── svm_oof/          OOF der SVM auf train.csv (CPU) für Ensemble-Gewichte
