@@ -89,6 +89,20 @@ try:
     patched = WORK / 'frigid_runner_patched.py'
     patched.write_text(code.replace(sys.argv[3], sys.argv[4]))
     spectra, formulas = str(test), WORK / 'frigid_formulas.tsv'
+    # RDKit gehört nicht zum Image: die Pipeline installiert es erst nach dem Start dieses Prozesses
+    import importlib, importlib.util, glob
+    t_rd = time.time()
+    while importlib.util.find_spec('rdkit') is None and time.time() - t_rd < 1200:
+        time.sleep(20)
+        importlib.invalidate_caches()
+    if importlib.util.find_spec('rdkit') is None:
+        tag = f'cp{sys.version_info.major}{sys.version_info.minor}'
+        whl = [w for w in glob.glob('/kaggle/input/**/rdkit-*.whl', recursive=True)
+               if tag in w and os.path.basename(w).startswith('rdkit-2026.3.3-')]
+        assert whl, 'RDKit wheel missing'
+        subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', '--no-index', '--no-deps', whl[0]], check=True)
+        importlib.invalidate_caches()
+    st(state='rdkit_ready', waited_s=round(time.time() - t_rd))
     import pandas as pd
     from rdkit import Chem
     from rdkit.Chem import Descriptors
