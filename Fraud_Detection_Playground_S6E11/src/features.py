@@ -76,3 +76,43 @@ def build(name: str, train: pd.DataFrame, test: pd.DataFrame) -> tuple[pd.DataFr
         return JOINT_FEATURE_SETS[name](train, test)
     fn = FEATURE_SETS[name]
     return fn(train), fn(test)
+
+
+# v4 (H11): linearen-Modell-freundliche Variante von v1 (für LogReg). Bin-Grenzen sind feste
+# Konstanten (gerundete Dezile über train+test, label-frei) -> kein Fitting, reproduzierbar.
+V4_LOG_COLS = ["account_balance_usd", "distance_from_home_km", "hours_since_last_txn"]
+V4_BINS = {
+    "amount_usd": [9.22, 13.59, 18.12, 22.54, 27.25, 32.51, 39.08, 46.91, 91.08],
+    "hours_since_last_txn": [0.85, 1.71, 2.54, 3.62, 4.72, 6.14, 7.94, 10.47, 15.0],
+    "account_balance_usd": [593.62, 751.65, 912.6, 1138.62, 1385.2, 1677.01, 2214.87, 2899.29, 4026.04],
+    "velocity_score": [0.05, 4.1, 9.5, 13.2, 15.8, 18.6, 21.4, 24.4, 28.0, 33.1],  # Bin 0 = genau 0
+    "merchant_risk_score": [20.0, 24.7, 28.1, 31.2, 34.2, 37.3, 40.7, 45.1, 51.6],
+    "customer_age": [25, 33, 41, 47, 52, 58, 63, 69, 76],
+}
+V4_CLIP_CATS = {"txn_count_last_24h": 7, "cvv_retry_count": 2, "prior_disputes": 3}
+V4_FLAG_PAIRS = [("used_vpn", "ip_country_mismatch"), ("is_foreign_transaction", "ip_country_mismatch"),
+                 ("is_foreign_transaction", "is_new_merchant"), ("is_new_merchant", "billing_shipping_mismatch"),
+                 ("used_vpn", "is_new_merchant"), ("is_ai_generated_scam_attempt", "is_new_merchant")]
+
+
+def v4(df: pd.DataFrame) -> pd.DataFrame:
+    """v1 + velocity_is_zero, log1p schiefer Größen, feste Quantil-Bins als `category`,
+    geclippte Klein-Zähler als `category`, Risiko-Flag-Interaktionen (nur für lineare Modelle)."""
+    X = v1(df)
+    X["velocity_is_zero"] = (df["velocity_score"] == 0).astype("int8")
+    for c in V4_LOG_COLS:
+        X[f"log_{c}"] = np.log1p(df[c])
+    X["log_amount_to_balance"] = np.log1p(X["amount_to_balance"])
+    X["log_txn_per_hour"] = np.log1p(X["txn_per_hour"])
+    for c, edges in V4_BINS.items():
+        X[f"{c}_bin"] = pd.Categorical(np.digitize(df[c], edges), categories=range(len(edges) + 1))
+    for c, hi in V4_CLIP_CATS.items():
+        X[f"{c}_lvl"] = pd.Categorical(df[c].clip(upper=hi), categories=range(hi + 1))
+    for a, b in V4_FLAG_PAIRS:
+        X[f"{a}_x_{b}"] = (df[a] * df[b]).astype("int8")
+    X["cvv_retry_x_new_merchant"] = ((df["cvv_retry_count"] > 0) & (df["is_new_merchant"] == 1)).astype("int8")
+    X["risk_flags_ge2"] = (X["risk_flag_sum"] >= 2).astype("int8")
+    return X
+
+
+FEATURE_SETS["v4"] = v4
