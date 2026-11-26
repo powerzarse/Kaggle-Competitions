@@ -21,6 +21,7 @@ Commit-Lauf OK (11:08). Hinweis: Im Commit-Lauf (FAST_COMMIT) schreibt dieses No
 (`variant-proof.json`: variant „queue“) und überspringt alle Stufen samt Smoke-Tests; geprüft wird nur der
 Abschluss-Audit. Abgabe 26.11. 11:09, Ref 58940981.
 
-**Public LB:** ausstehend.
+**Public LB: 0.727** (gewertet 26.11. ~19:00) = Original → reproduziert. Platz 111/7.175 (Silberzone; Bronze 0.720,
+Silber 0.724, Gold ~0.760, Platz 1 0.813). Neue Basis statt V21 (0.724).
 
 Push: `.venv/bin/kaggle kernels push -p kaggle/public_727/v23_fork`

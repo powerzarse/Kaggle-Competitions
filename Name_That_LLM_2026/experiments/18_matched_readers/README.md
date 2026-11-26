@@ -35,9 +35,30 @@ mit weniger Änderungen (Gemini-3.7-Texte verschieben nur Gemini-3.7 ↔ 3.8).
 
 ## Test 3 (`svc4_pool_test.py`): echtes svc4 mit Pool
 Vektorisierer fest aus dem Kern, nur die SVC neu; Pool v14 lokal, geschichtete Stichprobe 30 % mit Gewicht
-0.35/0.3 (voller Pool passt nicht in 16 GB). Ergebnis: ausstehend.
+0.35/0.3 (voller Pool passt nicht in 16 GB). Ergebnis (`models/18_matched_readers/svc4_pool_test.csv`):
 
-## Plan
-Hält der Gewinn mit Pool: svc4 auf allen Daten + markbarney (Kimi+Qwen) neu fitten (gleiche Vektorisierer → nur
-`model.npz` neu), als privaten Datensatz hochladen, im 0.727-Notebook nur `core/svc4/model.npz` ersetzen (V24),
-Abgabe nach Rücksprache. Prüfen nur über das LB (Sim für Nicht-GLM-Entscheidungen zweimal widerlegt).
+| Daten | bal argmax | bal Sinkhorn | Δ Pp. [90 %] | P>0 | Macro-AUC | Kimi | Gem-3.7 |
+|---|---|---|---|---|---|---|---|
+| ohne markbarney | 0.471 | 0.469 | 0 | – | 0.904 | 0.22 | 0.39 |
+| + nur Kimi+Qwen w0.5 | 0.473 | 0.473 | +0,37 [−0,07; +0,85] | 0.90 | 0.907 | 0.25 | 0.39 |
+| **+ markbarney w0.5** | 0.471 | **0.480** | **+1,07 [+0,44; +1,81]** | 0.995 | 0.912 | 0.29 | 0.42 |
+
+Mit Pool hilft der volle markbarney-Satz am meisten (der Pool dämpft die Gemini-3.7-Verschiebung aus Vortest 1).
+Ohne Sinkhorn (argmax) kein Gewinn; im Notebook steht svc4 im Blend mit vielen Lesern und Sinkhorn 0.30 → wie viel
+ankommt, zeigt nur das LB.
+
+## Umsetzung
+- `kaggle/svc4_mb/svc4_mb.py` → Kernel `linuszarse/ntl-svc4-markbarney` (Kaggle CPU, kein GPU-Kontingent): svc4 mit
+  den Kern-Vektorisierern neu gefittet auf train + matched-clean + aktuellem Pool (v15, 239k; Kern: v13 – v13 lässt
+  sich aus v14/v15 nicht rekonstruieren) ohne bzw. mit markbarney; Treuetest gegen das Original-`model.npz` auf den
+  (für beide ungesehenen) markbarney-Texten. Lokal mit 3.000 Zeilen je Quelle getestet.
+- `kaggle/public_727/build_v24_svc4mb.py` → V24a (ohne, Kontrolle: nur neue Pool-Version) und V24b (mit markbarney):
+  V23 + Prüfzelle (läuft im Commit) + Austausch von `core/svc4/model.npz` nach dem Entpacken des Kerns.
+- Kaggle-Lauf 26.11. (26 min, Ausgabe `models/18_matched_readers/svc4_mb_out/`): Pool 221.498, markbarney 5.561.
+  Treuetest auf den ungesehenen markbarney-Texten: „ohne“ vs. Original argmax gleich 0.80, Zeilen-r 0.977,
+  Trefferquote 0.32 vs. 0.31 (das Original erkennt host-ähnliche Texte dieser 5 Klassen kaum). Lokal: Kern mit
+  beiden Gewichten fehlerfrei (core_votes endlich), train-argmax zu 99,96 % wie das Original.
+- Commit-Läufe V24a/V24b 26.11. 13:43/13:45 OK (Prüfzelle „svc4 weights ok“, keine Fehler; Einhängepfad der
+  Kernel-Ausgabe wechselt zwischen `/kaggle/input/notebooks/linuszarse/…` und `/kaggle/input/ntl-svc4-markbarney/`, das
+  rekursive glob findet beide).
+- Abgabe beider (sauberer A/B-Vergleich) nach Rücksprache.

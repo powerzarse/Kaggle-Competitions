@@ -170,6 +170,8 @@ GLM-5.3 / GLM-5.3-Flash bewerteten Open-Pool-Texten statt der LogReg nur auf tra
 | V20 | V6 | Gegenprobe zu V15: gleicher Eingriff, Spezialist aber zur Laufzeit nur auf train.csv gefittet, t 1.0, Stärke 0.35 (gleich viele Änderungen wie V15, [Experiment 15](experiments/15_train_spec/README.md), Simulation −0,3) | gestrichen (alte Basis) |
 | **V21** | 0.724 (lumibee v69, PB-115-Likelihood) | unverändert geforkt, neue Basis ([`kaggle/public_724/`](kaggle/public_724/README.md)) | **0.724** |
 | V22 | V21 | PB-115-Kopf auf train + 4.734 Prefix-B-Pool-Texte, klassenweise ausgeglichen w0.5 ([Experiment 17](experiments/17_pb115_pool/README.md), Simulation auf echten Prefix-B-Daten −0,34) | nicht abgegeben |
+| **V23** | 0.727 (lightningv08, Qwen-Reader 3,5 % + PB-115 0.40 + Sibling Odds) | unverändert geforkt, neue Basis ([`kaggle/public_727/`](kaggle/public_727/README.md)) | **0.727** |
+| V24a / V24b | V23 | svc4 des Kerns neu gefittet ohne / mit markbarney-Texten ([Experiment 18](experiments/18_matched_readers/README.md)) | gebaut, Commit OK |
 
 V15–V17: Der Spezialist schadet auf dem LB umso mehr, je stärker er wirkt (−0,5 bis −1,0), entgegen der Simulation (+0,4 bis +0,7). Zweite Widerlegung der Ersatz-Stack-Simulation für Nicht-GLM-Entscheidungen.
 
@@ -181,8 +183,8 @@ Code: [`kaggle/public_694/`](kaggle/public_694/README.md) (V1–V5), [`kaggle/pu
 **Stand 17.11.2026, abends:** Platz 119 von 6.212 Teams (Public, 0.707). Grenzen: Bronze (Top 10 %) 0.701, Silber (Top 5 %, Platz 310) 0.702,
 Gold (Platz 22) 0.743, Platz 1 0.776. Für 0.72 bräuchte es Platz ~62.
 
-**Stand 25.11.2026, abends:** V21 (lumibee-Fork) 0.724 = Platz 135 von 7.089 (Silberzone). Bronze 0.720, Silber 0.721,
-Gold ~0.759, Platz 1 0.813.
+**Stand 26.11.2026, abends:** V23 (lightningv08-Fork) 0.727 = Platz 111 von 7.175 (Silberzone). Bronze 0.720, Silber 0.724,
+Gold ~0.760, Platz 1 0.813.
 
 ## Ordnerstruktur
 
@@ -202,7 +204,8 @@ Name_That_LLM_2026/
 │   ├── 14_glm_256/       GLM-Stufe mit 256 Tokens, train-Token-Scores bei 512 (V18/V19, nicht abgegeben)
 │   ├── 15_train_spec/    Familien-Spezialist nur auf train.csv, LB-Gegenprobe zu V15 (V20)
 │   ├── 16_paired_tokens/ gepaarte Token-Merkmale GLM-5.3 gegen Flash für den V6-Kopf (verworfen)
-│   └── 17_pb115_pool/    Prefix-B-Pool-Daten für den PB-115-Kopf des 0.724-Notebooks (V22, verworfen)
+│   ├── 17_pb115_pool/    Prefix-B-Pool-Daten für den PB-115-Kopf des 0.724-Notebooks (V22, verworfen)
+│   └── 18_matched_readers/ host-ähnliche markbarney-Texte für svc4 des 0.727-Kerns (V24a/b)
 ├── kaggle/               Notebook-Generatoren (build_notebook_*.py) + Kaggle-Metadaten
 │   ├── svm_pool/         Abgabe: LinearSVC (CPU, offline)
 │   ├── svm_oof/          OOF der SVM auf train.csv (CPU) für Ensemble-Gewichte
