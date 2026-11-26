@@ -65,6 +65,9 @@ pip install kaggle
 | 18.11. | `network_fr_p5_0495` | **0.495** (Rang 132 von 5.528, Silberbereich) |
 | 19.11. | `r1judge_gap150` (Baustein A, streng) | 0.495 |
 | 19.11. | `r1judge_gap075` (Baustein A, locker) | 0.495 |
+| 26.11. | `vt_0509` (ishankarnick, unverändert) | ausstehend |
+| 26.11. | `frigid_r2` v5 (Baustein B, Rang 2) | ausstehend |
+| 26.11. | `frigid_r3` (Baustein B, Rang 3) | ausstehend |
 
 ## Stand 17.11.2026
 - 5.448 Teams. Bronze-Grenze 0.492 (Rang 544), Silber 0.492 (Rang 272), Gold 0.504 (Rang 20).
@@ -139,3 +142,15 @@ keine öffentlichen Notebooks. Gold ist möglich, aber nicht wahrscheinlich, Sil
   letzte Zelle nach dem VT-Tier. Regel wie heliosli: library_max < 0.90, Ähnlichkeit ≥ 0.70, ≤ 30 schwere Atome.
   Rang 1 bleibt immer gleich. Varianten: Rang 2 (`frigid_r2`) und Rang 3 (`frigid_r3`).
 - Funktionstest im Commit-Lauf: FRIGID auf 2 sichtbaren Molekülen; ohne Vorschläge schlägt der Commit absichtlich fehl.
+
+### Baustein B: Weg zum lauffähigen FRIGID (26.11.)
+Fünf Commit-Läufe, jeder Fehler aus dem Kaggle-Log bzw. dem Runner-Log im Status abgelesen:
+1. `No module named rdkit`: RDKit wird von der Pipeline erst nach dem Start des Watchers installiert → Watcher wartet.
+2. Runner-Exit 1: omegaconf/antlr4 liegen nur als entpackte Quellordner vor (Kaggle entpackt `.tar.gz`) → Ordner kopieren.
+3. `No module named loguru` (safe/datamol) → kleines Ersatzmodul; statische Importanalyse über 759 Module ergab sonst nur `ot`.
+4. `No module named selfies` (datamols Lazy-Import von convert.py) → Platzhalter, nur für ungenutzte Funktionen nötig.
+5. Funktionstest bestanden: DLM lädt in 49 s, Generierung ~17 s pro Molekül (16 Versuche), Vorschläge für beide Testmoleküle.
+
+Im Bewertungslauf startet FRIGID erst nach dem Export der Pipeline und hört bei 7,5 h auf. Mit 100 Versuchen pro Molekül
+wird es vermutlich nicht alle ~400 Moleküle schaffen; die Zusammenführung nimmt, was fertig ist. GPU-Verbrauch für
+Baustein B: rund 80 Minuten.
