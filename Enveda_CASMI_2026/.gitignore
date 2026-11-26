@@ -5,3 +5,6 @@ models/*
 !models/.gitkeep
 .venv/
 **/submission.csv
+
+# Ausgaben gescheiterter Kaggle-Läufe (vom Wächter-Skript heruntergeladen)
+kaggle/_out_*/
