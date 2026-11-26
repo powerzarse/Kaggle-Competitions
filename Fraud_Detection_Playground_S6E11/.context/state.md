@@ -1,9 +1,10 @@
-# State  (aktualisiert: 2026-11-26 13:10 UTC, Zyklus Z1)
+# State  (aktualisiert: 2026-11-26 14:00 UTC, Zyklus Z1 abgeschlossen)
 - Deadline: 2026-11-30 23:59 UTC (noch 4 Tage) · Submissions heute übrig: 8
 - Bestes Einzelmodell: 02_xgb_v1 CV 0.94653 (LB –)
-- Bester Blend: blend_hc CV 0.94689 (LGBM .25 / XGB .5 / Cat .25, LB 0.94683)
+- Bester Blend: blend_02 CV 0.94698 (LGBM .286 / XGB .429 / Cat .143 / LogReg .143, LB –, nicht eingereicht:
+  +0.00008 zu blend_hc < min_delta)
 - Beste eingereichte CV: 0.94689 (blend_hc, LB 0.94683)
-- Laufende Jobs: 04_lgbm_v2 (H05) – Experimenter-Subagent
-- Nächster Schritt: H05/H06 (Feature-Sets v2/v3) auf
-  XGB/LGBM, H11 (billiges diverses Modell), H07 Tuning
+- Laufende Jobs: keine
+- Nächster Schritt (Z2): H07 LGBM/XGB-Tuning (Optuna auf 1 Fold), H13 LogReg v5 mit Bin×Bin-Interaktionen,
+  danach H10 (CatBoost größer) bzw. H09 (Seeds) → neuer Blend
 - Offene Fragen an den Menschen: keine

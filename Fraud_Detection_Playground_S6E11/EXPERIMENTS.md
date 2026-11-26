@@ -9,3 +9,4 @@
 | 2026-11-26 | 04_lgbm_v2 | v2 | lgbm | 0.93902 | 0.00368 |  | H05: numerische Spalten als Kategorie + Count-Encoding |
 | 2026-11-26 | 05_lgbm_v3 | v3 | lgbm_te | 0.94605 | 0.00317 |  | H06: fold-internes Target-Encoding + 3 Interaktionen |
 | 2026-11-26 | 06_logreg_v4 | v4 | logreg | 0.94484 | 0.00308 |  | H11: LogReg auf v4 als diverses Blend-Mitglied |
+| 2026-11-26 | blend_02 | - | rank-blend | 0.94698 | 0.00323 |  | 4 Modelle |

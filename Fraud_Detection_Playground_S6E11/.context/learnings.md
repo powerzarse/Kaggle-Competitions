@@ -4,6 +4,15 @@ Kurze, überprüfte Erkenntnisse. Jede Zeile: Was wurde geändert → Δ OOF-AUC
 Neueste oben. Der Researcher leitet daraus neue Hypothesen ab; nichts doppelt testen, was hier steht.
 
 ## Gesichert
+- [2026-11-26] blend_02 (Z1-Blend): Rank-Blend + Hill Climbing über 01/02/03/06 (keine rejected; max. Rang-Korr. 0.989 < 0.995)
+  → Gewichte LGBM 0.286 / XGB 0.429 / Cat 0.143 / LogReg 0.143 → OOF 0.94698. Δ +0.00008 zu blend_hc (5/5 Folds,
+  +0.00005…+0.00014), Δ +0.00044 zu 02_xgb_v1 (5/5 Folds) = erstmals ≥ 2×min_delta ggü. bestem Einzelmodell.
+  Genestet (HC auf 4 Folds, 5. geprüft) +0.00005 zu blend_hc (5/5 Folds, Gewichte stabil: LogReg 0.14–0.20);
+  ungewichteter Rank-Mean der 4 nur 0.94691 (+0.00002, 2/5) → LogReg braucht kleines Gewicht. Gewinn echt, aber
+  < min_delta ggü. eingereichtem blend_hc (Schwelle 0.94709) → laut Submit-Policy nicht einreichen.
+  Varianten (nur Scratch, nicht gespeichert): +05 → ±0.00000 (05 bringt nichts); +04 → 0.94707 (+0.00009 in-sample,
+  4/5, < min_delta, 04 ist rejected) → nicht übernehmen. Nächster Blend-Hebel: weiteres diverses, stärkeres Modell
+  (Rang-Korr. < 0.975, OOF ≥ ~0.945), nicht weitere GBDT-Varianten.
 - [2026-11-26] 06_logreg_v4 (H11): LogReg (One-Hot + StandardScaler fold-intern in der Pipeline, C=1.0) auf neuem
   Feature-Set v4 (v1 + velocity_is_zero, log1p-Spalten, feste Dezil-Bins, geclippte Zähler, 7 Flag-Interaktionen)
   → OOF 0.94484, Δ −0.00147 zu 01_lgbm_baseline (0/5 Folds; nur Kontext) → neutral (divers, Blend-Kandidat).
@@ -42,6 +51,8 @@ Neueste oben. Der Researcher leitet daraus neue Hypothesen ab; nichts doppelt te
 - [2026-11-26] LGBM (lr 0.03, 63 Leaves) auf v1: OOF 0.94631, Fold-Std 0.0033. Referenzpunkt.
 
 ## Offen / Hinweise
+- [Z1-Fazit] Feature Engineering für GBDTs auf v1 stagniert (H05 −0.0073, H06 −0.0003). Größte offene Hebel:
+  GBDT-Tuning (H07) und diverse, starke Nicht-GBDT-Modelle (H13, MLP) für den Blend.
 - Fold-Std (0.0033) ist groß gegenüber typischen Gewinnen → Vergleiche immer gepaart auf
   denselben Folds (OOF-AUC), nicht über Fold-Mittelwerte.
 - velocity_score = 0.0 kommt 69 426× vor (train+test; 48 499× in train ≈ 6.9 %) mit Fraud-Rate 0.04 %
