@@ -1,7 +1,8 @@
 """Blending über gespeicherte OOF-Vorhersagen.
 
-    python -m src.blend                     # alle Experimente, Hill Climbing
+    python -m src.blend                     # alle Einzelmodelle, Hill Climbing
     python -m src.blend exp_a exp_b exp_c   # nur ausgewählte
+Jeder Lauf wird als neues Experiment blend_NN gespeichert (nichts wird überschrieben).
 """
 import sys
 
@@ -51,7 +52,8 @@ def main(names: list[str]) -> None:
            "fold_scores": [roc_auc_score(y[folds == k], (oof_r @ w)[folds == k])
                            for k in range(folds.max() + 1)]}
     print(f"{res['cv']:.5f}  <hill climb>")
-    save_experiment("blend_hc", res, test["id"], "-", "rank-blend",
+    name = f"blend_{len([n for n in available_experiments() if n.startswith('blend')]) + 1:02d}"
+    save_experiment(name, res, test["id"], "-", "rank-blend",
                     params={"weights": dict(zip(names, map(float, w)))},
                     note=f"{len(names)} Modelle")
 
