@@ -23,8 +23,50 @@ Was der Builder einbaut (Code-Zellen der Basis bleiben unverändert):
 Aufruf (aus Enveda_CASMI_2026/):
     python kaggle/build_variant_frigid.py
 """
+import base64
 import json
 from pathlib import Path
+
+# Ersatzmodule für Pakete, die weder im Datensatz noch im Kaggle-Image liegen (werden nur angelegt, wenn sie fehlen).
+# loguru: von safe/datamol nur für einfache Log-Aufrufe genutzt. ot (POT): nur für Trainings-Augmentierung importiert.
+LOGURU_SHIM = '''import logging
+_LV = dict(trace=5, debug=10, info=20, success=25, warning=30, error=40, critical=50, exception=40)
+
+
+class _Logger:
+    def __init__(self):
+        self._l = logging.getLogger('loguru-shim')
+
+    def _emit(self, lvl, msg, *a, **k):
+        try:
+            text = str(msg).format(*a, **k) if (a or k) else str(msg)
+        except Exception:
+            text = str(msg)
+        self._l.log(lvl, text)
+
+    def __getattr__(self, n):
+        if n in _LV:
+            return lambda msg='', *a, **k: self._emit(_LV[n], msg, *a, **k)
+        if n in ('remove', 'add', 'configure', 'level', 'enable', 'disable', 'patch', 'complete'):
+            return lambda *a, **k: 0
+        if n in ('bind', 'opt', 'contextualize'):
+            return lambda *a, **k: self
+        if n == 'catch':
+            return lambda *a, **k: (a[0] if a and callable(a[0]) else (lambda f: f))
+        raise AttributeError(n)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+
+logger = _Logger()
+'''
+OT_SHIM = '''def __getattr__(name):
+    raise ImportError('POT (ot) is not installed; import-only stub (optimal transport is not used for generation)')
+'''
 
 ROOT = Path(__file__).resolve().parent
 SRC = ROOT / "vt_0509"
@@ -90,6 +132,27 @@ _FG_PATCH2_NEW = """        # Linolium: Kaggle entpackt .tar.gz beim Hochladen; 
             elif not _srcd.is_dir():
                 log(f'source package missing: {_rel}')
         log(f'site built: {len(whl)} wheels + sdists -> {site}')
+"""
+
+_FG_PATCH3_OLD = "        log('safe-gpt cache restored')\n"
+_FG_PATCH3_NEW = """        log('safe-gpt cache restored')
+        # Linolium: Abhängigkeitsbericht; Ersatzmodule nur für Pakete, die in Site und Image fehlen
+        import base64 as _b64, importlib, importlib.util
+        importlib.invalidate_caches()
+        _shims = {'loguru': _b64.b64decode('__LOGURU_B64__').decode(), 'ot': _b64.b64decode('__OT_B64__').decode()}
+        _rep = {}
+        for _m in ('loguru', 'ot', 'networkx', 'h5py', 'lightning_utilities', 'torchmetrics', 'pyarrow', 'regex', 'xxhash',
+                   'yaml', 'omegaconf', 'antlr4', 'hydra', 'lightning', 'transformers', 'safe', 'datamol', 'bionemo'):
+            try:
+                _rep[_m] = importlib.util.find_spec(_m) is not None
+            except Exception as _e:
+                _rep[_m] = ('error ' + repr(_e))[:80]
+            if _rep[_m] is False and _m in _shims:
+                (site / _m).mkdir(exist_ok=True)
+                (site / _m / '__init__.py').write_text(_shims[_m])
+                _rep[_m] = 'shim'
+        importlib.invalidate_caches()
+        log(f'dependency report: {_rep}')
 """
 
 _FG_WATCH = r"""import os, sys, json, time, subprocess
@@ -184,7 +247,8 @@ try:
     (_FG_WORK / 'frigid_watch.py').write_text(_FG_WATCH)
     FRIGID_PROC = _fg_sp.Popen([_fg_sys.executable, str(_FG_WORK / 'frigid_watch.py'), str(FRIGID_DEADLINE),
                                 '1' if _FG_RERUN else '0',
-                                _fg_json.dumps([[_FG_PATCH_OLD, _FG_PATCH_NEW], [_FG_PATCH2_OLD, _FG_PATCH2_NEW]])],
+                                _fg_json.dumps([[_FG_PATCH_OLD, _FG_PATCH_NEW], [_FG_PATCH2_OLD, _FG_PATCH2_NEW],
+                                            [_FG_PATCH3_OLD, _FG_PATCH3_NEW]])],
                                stdout=open(_FG_WORK / 'frigid_watch.log', 'w'), stderr=_fg_sp.STDOUT)
     print('[frigid] watcher started, pid', FRIGID_PROC.pid, '| rerun', _FG_RERUN,
           '| deadline at %.2f h' % ((FRIGID_DEADLINE - _FG_T0) / 3600), flush=True)
@@ -327,11 +391,13 @@ def build(folder, pos, slug, title):
     assert "VIRTUAL NATURAL-PRODUCT TIER" in "".join(nb["cells"][-1]["source"]), "letzte Zelle ist nicht der VT-Tier"
     md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s}
     cc = lambda s: {"cell_type": "code", "metadata": {}, "execution_count": None, "outputs": [], "source": s}
-    nb["cells"][idx[0]:idx[0]] = [md(WATCH_MD), cc(WATCH_CELL)]
+    watch = (WATCH_CELL.replace("__LOGURU_B64__", base64.b64encode(LOGURU_SHIM.encode()).decode())
+             .replace("__OT_B64__", base64.b64encode(OT_SHIM.encode()).decode()))
+    nb["cells"][idx[0]:idx[0]] = [md(WATCH_MD), cc(watch)]
     nb["cells"] += [md(MERGE_MD.format(pos=pos)), cc(MERGE_CELL.replace("__POS__", str(pos)))]
     shorten_markdown(nb)
     code_after = ["".join(c["source"]) for c in nb["cells"] if c["cell_type"] == "code"]
-    assert [s for s in code_after if s not in (WATCH_CELL, MERGE_CELL.replace("__POS__", str(pos)))] == code_before
+    assert [s for s in code_after if s not in (watch, MERGE_CELL.replace("__POS__", str(pos)))] == code_before
     meta = json.loads((SRC / "kernel-metadata.json").read_text())
     meta.update(id=f"linuszarse/{slug}", title=title, code_file=f"{folder}.ipynb", is_private=True)
     for d in FRIGID_DATASETS:
