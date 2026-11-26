@@ -65,9 +65,9 @@ pip install kaggle
 | 18.11. | `network_fr_p5_0495` | **0.495** (Rang 132 von 5.528, Silberbereich) |
 | 19.11. | `r1judge_gap150` (Baustein A, streng) | 0.495 |
 | 19.11. | `r1judge_gap075` (Baustein A, locker) | 0.495 |
-| 26.11. | `vt_0509` (ishankarnick, unverändert) | ausstehend |
-| 26.11. | `frigid_r2` v5 (Baustein B, Rang 2) | ausstehend |
-| 26.11. | `frigid_r3` (Baustein B, Rang 3) | ausstehend |
+| 26.11. | `vt_0509` (ishankarnick, unverändert) | 0.509 |
+| 26.11. | `frigid_r2` v5 (Baustein B, Rang 2) | 0.509 |
+| 26.11. | `frigid_r3` (Baustein B, Rang 3) | 0.509 |
 
 ## Stand 17.11.2026
 - 5.448 Teams. Bronze-Grenze 0.492 (Rang 544), Silber 0.492 (Rang 272), Gold 0.504 (Rang 20).
@@ -154,3 +154,9 @@ Fünf Commit-Läufe, jeder Fehler aus dem Kaggle-Log bzw. dem Runner-Log im Stat
 Im Bewertungslauf startet FRIGID erst nach dem Export der Pipeline und hört bei 7,5 h auf. Mit 100 Versuchen pro Molekül
 wird es vermutlich nicht alle ~400 Moleküle schaffen; die Zusammenführung nimmt, was fertig ist. GPU-Verbrauch für
 Baustein B: rund 80 Minuten.
+
+## Stand 26.11.2026 (abends)
+- Baustein B: Rang 2 und Rang 3 beide 0.509, genau wie die Kontrolle. Auf den ~125 Public-Molekülen hat FRIGID kein
+  Molekül sichtbar verbessert (oder Gewinne und Verluste heben sich auf). Ob die Zusammenführung im Bewertungslauf
+  überhaupt Kandidaten eingefügt hat, ist von außen nicht sichtbar (Logs von Bewertungsläufen sind nicht abrufbar).
+- 6.076 Teams, eigener Rang 938 (0.509). Silber/Bronze 0.509 (960 Teams dort), Gold 0.522. Neue Abgaben brauchen ≥ 0.510.
