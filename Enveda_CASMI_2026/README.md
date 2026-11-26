@@ -27,6 +27,8 @@ Enveda_CASMI_2026/
 │   ├── anchored_rank2_pin/     0.492 + Rang-2-Absicherung (flexonafft v7), unverändert
 │   ├── network_fr_p5_0495/     0.495 von taeyangg4 (Netzwerk D-L1 + Fragment-Reranker + P5-Tail), unverändert
 │   ├── build_variant_r1judge.py  erzeugt r1judge_gap150/ und r1judge_gap075/ (Baustein A)
+│   ├── vt_0509/                öffentliche 0.509-Basis (ishankarnick, Virtual-NP-Tier), unverändert
+│   ├── build_variant_frigid.py   erzeugt frigid_r2/ und frigid_r3/ (Baustein B)
 │   └── build_variant_gnps.py   erzeugt network_0488_gnps/ aus network_0488/
 └── data/                       nicht im Git
 ```
@@ -117,3 +119,23 @@ keine öffentlichen Notebooks. Gold ist möglich, aber nicht wahrscheinlich, Sil
   offen. Nicht weiter verfolgen, solange es kein besseres Rang-1-Signal gibt.
 - 5.601 Teams, 476 Teams ≥ 0.495 (viele Kopien des taeyangg4-Notebooks). Silbergrenze Rang 280 bei 0.495, eigener
   Rang 175. Gold ab 0.506.
+
+## Stand 26.11.2026
+- 6.041 Teams. Eigener Rang 1.365 (0.495), keine Medaille mehr. Bronze und Silber liegen bei 0.509 (723 Teams genau
+  dort), Gold bei 0.520. Eine neue Abgabe braucht ≥ 0.510 (nur 151 Teams), das wäre Silber.
+- Neue öffentliche Basis: ishankarnick 0.509, Virtual-NP-Tier mit 47,7 Mio. einstufigen Derivaten des Kandidatenpools.
+  Mehrfach reproduziert (alexchilton, goodpjw2008). Höhere Angaben (0.512+, 0.515+) sind nur Zielwerte.
+- ishankarniks Proben: In der schwachen Gruppe (kein Bibliothekstreffer) steht die Antwort auf Rang 1 oder fehlt ganz.
+  Umsortieren hilft dort nicht, auch der Virtual-NP-Tier findet dort nichts. Das erklärt, warum Baustein A nichts bewegte.
+
+## Baustein B: FRIGID-de-novo-Kandidaten
+- FRIGID (öffentliche Gewichte kvswim/frigidckpts-casmi26) erzeugt Strukturen aus MIST-Fingerprint und Summenformel und
+  setzt genau dort an, wo die Antwort fehlt.
+- **Fehler gefunden:** Der öffentliche Runner (gloriachen0816/frigidarm-runner-assets) installiert unter Python 3.13
+  nicht, weil 18 Wheels für Python 3.12 gebaut sind (`aiohttp … cp312 is not a supported wheel`). Bei riochiang lief
+  FRIGID damit vermutlich nie. Der Builder kopiert den Runner und filtert unpassende Wheels vor `pip install`; die
+  aussortierten Pakete (aiohttp, pyarrow, pyyaml, regex …) bringt das Kaggle-Image selbst mit. Lokal geprüft.
+- Ablauf: FRIGID läuft auf GPU 1 parallel zur Pipeline (niedrige CPU-Priorität, Stopp bei 7,5 h), Zusammenführung als
+  letzte Zelle nach dem VT-Tier. Regel wie heliosli: library_max < 0.90, Ähnlichkeit ≥ 0.70, ≤ 30 schwere Atome.
+  Rang 1 bleibt immer gleich. Varianten: Rang 2 (`frigid_r2`) und Rang 3 (`frigid_r3`).
+- Funktionstest im Commit-Lauf: FRIGID auf 2 sichtbaren Molekülen; ohne Vorschläge schlägt der Commit absichtlich fehl.
