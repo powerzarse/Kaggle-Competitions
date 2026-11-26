@@ -1,0 +1,27 @@
+{
+  "id": "linuszarse/ntl-glm-scores-poolpb160",
+  "title": "NTL GLM Scores PoolPB160",
+  "code_file": "ntl-glm-scores-poolpb160.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "docker_image": "gcr.io/kaggle-private-byod/python@sha256:fc720c15545eb096a510e1f085b17fc118387a007599424d953a4f327b71cacf",
+  "machine_shape": "NvidiaTeslaT4",
+  "dataset_sources": [
+    "crtproduction/name-that-llm-open-pool",
+    "lumibee/ntl-prefixb-full-115",
+    "jamesliebel/glm53-iq3xxs-segs-a-mirror",
+    "jamesliebel/glm53-iq3xxs-segs-b-mirror",
+    "jamesliebel/glm53-flash-iq3xxs-segs-mirror"
+  ],
+  "competition_sources": [
+    "name-that-llm"
+  ],
+  "kernel_sources": [
+    "estopadilla/ntl-glm-prefix-ab"
+  ],
+  "model_sources": []
+}
