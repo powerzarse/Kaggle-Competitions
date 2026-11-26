@@ -4,3 +4,5 @@
 |---|---|---|---|---|---|---|---|
 | 2026-11-26 | 01_lgbm_baseline | v1 | lgbm | 0.94631 | 0.00333 | 0.94630 | LGBM Default-Params, Feature-Set v1 |
 | 2026-11-26 | 02_xgb_v1 | v1 | xgb | 0.94653 | 0.00328 |  | xgb Default-Params, Feature-Set v1 |
+| 2026-11-26 | 03_catboost_v1 | v1 | catboost | 0.94581 | 0.00315 |  | catboost Default-Params, Feature-Set v1 |
+| 2026-11-26 | blend_hc | - | rank-blend | 0.94689 | 0.00325 |  | 3 Modelle |
