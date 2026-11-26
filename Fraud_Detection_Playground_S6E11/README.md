@@ -17,7 +17,7 @@ Auth-Methode, Kanal, Gerät). Keine fehlenden Werte.
 ## Struktur
 ```
 Fraud_Detection_Playground_S6E11/
-├── CLAUDE.md          # Arbeitsregeln für Claude in diesem Ordner
+├── .context/          # Gedächtnis des Agentensystems: rules, state, backlog, learnings, journal
 ├── EXPERIMENTS.md     # Ergebnis-Log (wird von src/tracking.py fortgeschrieben)
 ├── src/
 │   ├── config.py      # Pfade, Spaltenlisten, Seed, Folds
@@ -27,10 +27,13 @@ Fraud_Detection_Playground_S6E11/
 │   ├── models.py      # lgbm / xgb / catboost / logreg im fit_predict-Format
 │   ├── tracking.py    # OOF/Test speichern, Submission schreiben, Log-Eintrag
 │   ├── blend.py       # Rank-Blend + Hill Climbing über OOFs
-│   └── kaggle_api.py  # download / submit / submissions (REST, ohne CLI)
+│   ├── status.py      # Lagebericht: Rangliste, Rang-Korrelationen, Submission-Budget
+│   └── kaggle_api.py  # download / limits / submit / submissions (ohne CLI)
 ├── experiments/
 │   ├── _template/run.py      # Vorlage für neue Experimente
-│   └── 01_lgbm_baseline/     # erstes Experiment
+│   ├── 01_lgbm_baseline/
+│   ├── 02_xgb_v1/
+│   └── 03_catboost_v1/
 ├── notebooks/         # EDA
 ├── data/              # Rohdaten + folds.csv (nicht im Git)
 ├── models/            # OOF-/Test-Vorhersagen je Experiment (nicht im Git)
@@ -40,19 +43,19 @@ Fraud_Detection_Playground_S6E11/
 ```
 
 ## Workflow
+Automatisiert über das Agentensystem im Repo-Root (`/.agents/`, siehe dortiges README):
+```bash
+../.agents/setup_claude.sh      # einmal pro Clone, macht die Skills für Claude Code sichtbar
+```
+Dann in Claude Code `/kaggle-autopilot` (ein Zyklus) oder `/loop /kaggle-autopilot`.
+
+Manuell:
 ```bash
 pip install -r requirements.txt
-./download_data.sh                                    # Skill: fraud-data
-cp -r experiments/_template experiments/02_xgb_v1     # Skill: fraud-experiment
-python experiments/02_xgb_v1/run.py
-python -m src.blend                                   # Skill: fraud-blend
-python -m src.kaggle_api submit submissions/blend_hc.csv "blend"   # Skill: fraud-submit
+./download_data.sh                                     # Skill: kaggle-data
+cp -r experiments/_template experiments/04_<name>      # Skill: kaggle-experiment
+python experiments/04_<name>/run.py
+python -m src.status                                   # Rangliste + Budget
+python -m src.blend                                    # Skill: kaggle-blend
+python -m src.kaggle_api submit submissions/blend_hc.csv "blend"   # Skill: kaggle-submit
 ```
-
-## Claude-Skills (`/.claude/skills/`)
-| Skill | Zweck |
-|---|---|
-| `fraud-data` | Daten laden & prüfen |
-| `fraud-experiment` | Experiment anlegen, CV laufen lassen, loggen |
-| `fraud-blend` | OOF-basiertes Rank-Blending |
-| `fraud-submit` | Validieren, (nach Bestätigung) einreichen, LB-Score loggen |

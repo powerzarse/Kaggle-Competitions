@@ -1,6 +1,11 @@
 # Kaggle-Competitions
 Personal workspace for Kaggle competition projects. Dive into my Kaggle Competition, notebooks and code. Follow on my why to become good 📊💻 #DataScience #Kaggle
 
+## Agentisches Trainingssystem
+`.agents/` enthält Rollen (Orchestrator, Researcher, Experimenter, Reviewer, Ensembler) und Skills,
+die das Training je Competition automatisieren; das Wissen jeder Competition liegt in `<Ordner>/.context/`.
+Details: [.agents/README.md](.agents/README.md).
+
 ## Competitions
 | Ordner | Competition |
 |---|---|

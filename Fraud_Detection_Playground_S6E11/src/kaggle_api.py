@@ -1,12 +1,14 @@
-"""Schlanker Kaggle-REST-Client (ohne kaggle-CLI) für Download, Submit und Score-Abfrage.
+"""Schlanker Kaggle-Client (ohne kaggle-CLI) für Download, Submit, Limits und Scores.
 
-Auth: KAGGLE_USERNAME/KAGGLE_KEY bzw. ~/.kaggle/kaggle.json (Basic-Auth) oder
-KAGGLE_API_TOKEN bzw. ~/.kaggle/access_token (Bearer). In der Claude-Cloud-Umgebung
+Nutzt die RPC-API (`/api/v1/<Service>/<Methode>`, wie das offizielle kagglesdk).
+Auth: KAGGLE_API_TOKEN bzw. ~/.kaggle/access_token (Bearer) oder
+KAGGLE_USERNAME/KAGGLE_KEY bzw. ~/.kaggle/kaggle.json (Basic). In der Claude-Cloud-Umgebung
 injiziert der Proxy die Zugangsdaten automatisch – dann geht es ganz ohne Key.
 
     python -m src.kaggle_api download
-    python -m src.kaggle_api submit submissions/01_lgbm_baseline.csv "LGBM baseline, CV 0.9xx"
+    python -m src.kaggle_api limits
     python -m src.kaggle_api submissions
+    python -m src.kaggle_api submit submissions/01_lgbm_baseline.csv "LGBM baseline | CV 0.94631"
 """
 import json
 import os
@@ -20,24 +22,32 @@ import requests
 from .config import COMPETITION, DATA_DIR
 
 BASE = "https://www.kaggle.com/api/v1"
+COMP_SVC = "competitions.CompetitionApiService"
 
 
 def _session() -> requests.Session:
     s = requests.Session()
+    token = os.getenv("KAGGLE_API_TOKEN")
+    tfile = Path.home() / ".kaggle" / "access_token"
+    if not token and tfile.exists():
+        token = tfile.read_text().strip()
     user, key = os.getenv("KAGGLE_USERNAME"), os.getenv("KAGGLE_KEY")
     cfg = Path.home() / ".kaggle" / "kaggle.json"
     if not (user and key) and cfg.exists():
         c = json.loads(cfg.read_text())
         user, key = c.get("username"), c.get("key")
-    token = os.getenv("KAGGLE_API_TOKEN")
-    tfile = Path.home() / ".kaggle" / "access_token"
-    if not token and tfile.exists():
-        token = tfile.read_text().strip()
-    if user and key:
-        s.auth = (user, key)
-    elif token:
+    if token:
         s.headers["Authorization"] = f"Bearer {token}"
+    elif user and key:
+        s.auth = (user, key)
     return s
+
+
+def _rpc(method: str, body: dict, service: str = COMP_SVC) -> dict:
+    r = _session().post(f"{BASE}/{service}/{method}", json=body)
+    if not r.ok:
+        raise RuntimeError(f"{method}: HTTP {r.status_code} {r.text[:300]}")
+    return r.json() if r.text else {}
 
 
 def download(dest: Path = DATA_DIR) -> None:
@@ -54,50 +64,59 @@ def download(dest: Path = DATA_DIR) -> None:
     print("entpackt nach", dest, sorted(p.name for p in dest.glob("*.csv")))
 
 
-def submissions(n: int = 10) -> list[dict]:
-    r = _session().get(f"{BASE}/competitions/submissions/list/{COMPETITION}")
-    r.raise_for_status()
-    rows = r.json()[:n]
-    for s in rows:
-        print(f"{s.get('date', '')[:19]}  {s.get('status', ''):<10} "
-              f"public={s.get('publicScore', '')!s:<10} {s.get('fileName', '')}  "
-              f"| {s.get('description', '')}")
+def limits() -> dict:
+    res = _rpc("GetSubmissionLimits", {"competitionName": COMPETITION})
+    print("heute noch erlaubt:", res.get("numAllowedNow"))
+    return res
+
+
+def submissions(n: int = 10, quiet: bool = False) -> list[dict]:
+    rows = _rpc("ListSubmissions", {"competitionName": COMPETITION}).get("submissions", [])[:n]
+    if not quiet:
+        for s in rows:
+            print(f"{str(s.get('date', ''))[:19]}  {s.get('status', 'PENDING'):<10} "
+                  f"public={s.get('publicScore', '-')!s:<9} {s.get('fileName', '')}  "
+                  f"| {s.get('description', '')}")
     return rows
 
 
-def submit(path: str, message: str, wait: bool = True) -> None:
+def submit(path: str, message: str, wait: bool = True) -> dict | None:
     p = Path(path)
-    s = _session()
-    # 1) Upload-URL anfordern
-    r = s.post(f"{BASE}/competitions/{COMPETITION}/submissions/url",
-               data={"fileName": p.name, "contentLength": p.stat().st_size,
-                     "lastModifiedDateUtc": int(p.stat().st_mtime)})
-    r.raise_for_status()
-    info = r.json()
-    # 2) Datei hochladen
+    # 1) Upload-URL holen
+    up = _rpc("StartSubmissionUpload", {
+        "competitionName": COMPETITION, "fileName": p.name,
+        "contentLength": p.stat().st_size, "lastModifiedEpochSeconds": int(p.stat().st_mtime)})
+    # 2) Datei hochladen (signierte URL, keine Kaggle-Auth)
     with p.open("rb") as f:
-        up = requests.put(info["createUrl"], data=f)
-    up.raise_for_status()
-    # 3) Submission auslösen
-    r = s.post(f"{BASE}/competitions/submissions/submit/{COMPETITION}",
-               data={"blobFileTokens": info["token"], "submissionDescription": message})
-    r.raise_for_status()
-    print("eingereicht:", r.json().get("message", r.text[:200]))
-    if wait:
-        for _ in range(30):
-            time.sleep(10)
-            last = submissions(1)
-            if last and last[0].get("status", "").lower() not in ("pending", "submissionstatus.pending"):
-                break
+        r = requests.put(up["createUrl"], data=f)
+    if r.status_code not in (200, 201):
+        raise RuntimeError(f"Upload fehlgeschlagen: HTTP {r.status_code} {r.text[:300]}")
+    # 3) Submission anlegen
+    res = _rpc("CreateSubmission", {"competitionName": COMPETITION,
+                                    "blobFileTokens": up["token"], "submissionDescription": message})
+    print("eingereicht:", res.get("message", res))
+    if not wait:
+        return None
+    for _ in range(60):  # bis zu 10 Min. auf den Score warten
+        time.sleep(10)
+        last = submissions(1, quiet=True)
+        status = str(last[0].get("status", "PENDING")).upper() if last else "PENDING"
+        if status not in ("PENDING", ""):  # leerer Status = Default PENDING
+            submissions(1)
+            return last[0]
+    print("Score noch ausstehend – später `python -m src.kaggle_api submissions`")
+    return None
 
 
 if __name__ == "__main__":
     cmd, *args = sys.argv[1:] or ["submissions"]
     if cmd == "download":
         download()
+    elif cmd == "limits":
+        limits()
     elif cmd == "submissions":
         submissions()
     elif cmd == "submit":
         submit(args[0], args[1] if len(args) > 1 else Path(args[0]).stem)
     else:
-        sys.exit(f"unbekannter Befehl: {cmd} (download | submissions | submit <csv> [msg])")
+        sys.exit(f"unbekannter Befehl: {cmd} (download | limits | submissions | submit <csv> [msg])")
