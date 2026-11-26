@@ -4,6 +4,14 @@ Kurze, überprüfte Erkenntnisse. Jede Zeile: Was wurde geändert → Δ OOF-AUC
 Neueste oben. Der Researcher leitet daraus neue Hypothesen ab; nichts doppelt testen, was hier steht.
 
 ## Gesichert
+- [2026-11-26] 05_lgbm_v3 (H06): fold-internes Target-Encoding (m-Estimate m=20, innere 5-fold-OOF auf X_tr)
+  der 5 CAT_COLS + 3 Interaktionen channel×device_type / auth_method×channel / merchant_category×channel
+  (40/25/60 Level), Kategorien bleiben `category` → Δ −0.00026 (1/5 Folds) → schlechter (knapp über min_delta).
+  Code geprüft, leakage-frei. Bei 5–12 Leveln je Kategorie und ≤ 60 Interaktions-Leveln findet LGBM diese
+  Kombinationen über native Kategorie-Splits schon selbst. Das TE ist redundant, und das rauschigere OOF-TE im
+  Train passt nicht ganz zum vollen Mapping in Val/Test. Rang-Korr. 0.989 zu 01. Blend-Zuschlag zu blend_hc
+  höchstens +0.00002 (w 0.1, In-Sample), 05 statt 01 im blend_hc 0.94685 (−0.00004) → kein Blend-Kandidat.
+  TE niedrigkardinaler Kategorien nicht erneut für GBDTs testen. Für lineare Modelle/NN (H11) kann es weiter nützen.
 - [2026-11-26] 04_lgbm_v2 (H05): v1 + 6 numerische Spalten als `category` (_cat) + 6 Count-Encodings
   (_cnt, über train+test, label-frei) → Δ −0.00729 (0/5 Folds) → schlechter. Ursache sind die _cat-Spalten:
   Reviewer-Probe Fold 0, lr 0.1 (v1 0.94279): +_cnt 0.94251 (−0.0003, Rauschen), +alle _cat 0.93334
