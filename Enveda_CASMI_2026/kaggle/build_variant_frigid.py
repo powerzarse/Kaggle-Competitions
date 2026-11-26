@@ -64,6 +64,9 @@ class _Logger:
 
 logger = _Logger()
 '''
+SELFIES_SHIM = '''def __getattr__(name):
+    raise ImportError('selfies is not installed; import-only stub (datamol.to_selfies/from_selfies are not used by FRIGID)')
+'''
 OT_SHIM = '''def __getattr__(name):
     raise ImportError('POT (ot) is not installed; import-only stub (optimal transport is not used for generation)')
 '''
@@ -139,9 +142,10 @@ _FG_PATCH3_NEW = """        log('safe-gpt cache restored')
         # Linolium: Abhängigkeitsbericht; Ersatzmodule nur für Pakete, die in Site und Image fehlen
         import base64 as _b64, importlib, importlib.util
         importlib.invalidate_caches()
-        _shims = {'loguru': _b64.b64decode('__LOGURU_B64__').decode(), 'ot': _b64.b64decode('__OT_B64__').decode()}
+        _shims = {'loguru': _b64.b64decode('__LOGURU_B64__').decode(), 'ot': _b64.b64decode('__OT_B64__').decode(),
+                  'selfies': _b64.b64decode('__SELFIES_B64__').decode()}
         _rep = {}
-        for _m in ('loguru', 'ot', 'networkx', 'h5py', 'lightning_utilities', 'torchmetrics', 'pyarrow', 'regex', 'xxhash',
+        for _m in ('loguru', 'ot', 'selfies', 'networkx', 'h5py', 'lightning_utilities', 'torchmetrics', 'pyarrow', 'regex', 'xxhash',
                    'yaml', 'omegaconf', 'antlr4', 'hydra', 'lightning', 'transformers', 'safe', 'datamol', 'bionemo'):
             try:
                 _rep[_m] = importlib.util.find_spec(_m) is not None
@@ -392,7 +396,8 @@ def build(folder, pos, slug, title):
     md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s}
     cc = lambda s: {"cell_type": "code", "metadata": {}, "execution_count": None, "outputs": [], "source": s}
     watch = (WATCH_CELL.replace("__LOGURU_B64__", base64.b64encode(LOGURU_SHIM.encode()).decode())
-             .replace("__OT_B64__", base64.b64encode(OT_SHIM.encode()).decode()))
+             .replace("__OT_B64__", base64.b64encode(OT_SHIM.encode()).decode())
+             .replace("__SELFIES_B64__", base64.b64encode(SELFIES_SHIM.encode()).decode()))
     nb["cells"][idx[0]:idx[0]] = [md(WATCH_MD), cc(watch)]
     nb["cells"] += [md(MERGE_MD.format(pos=pos)), cc(MERGE_CELL.replace("__POS__", str(pos)))]
     shorten_markdown(nb)
