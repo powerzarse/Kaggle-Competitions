@@ -2,7 +2,10 @@
 
 XGBoost/CatBoost werden erst beim Aufruf importiert -> optional installieren.
 """
-from .config import SEED
+import numpy as np
+import pandas as pd
+
+from .config import CAT_COLS, SEED
 
 
 def lgbm(params: dict | None = None, early_stopping: int = 200):
@@ -74,7 +77,59 @@ def logreg(params: dict | None = None):
     return fit_predict
 
 
+def _te_fit(keys, y, m, prior):
+    """m-Estimate-Mittel je Schlüssel: (sum_y + m*prior) / (n + m)."""
+    g = pd.DataFrame({"k": keys, "y": y}).groupby("k", sort=False)["y"].agg(["sum", "count"])
+    return (g["sum"] + m * prior) / (g["count"] + m)
+
+
+def target_encode(X_tr, y_tr, X_va, X_te, cols, m=20.0, n_inner=5, seed=SEED):
+    """Leakage-freies Target-Encoding der Spalten `cols` -> neue Spalten `<c>_te`.
+
+    X_tr: out-of-fold über innere StratifiedKFold-Splits (nur auf X_tr/y_tr).
+    X_va, X_te: Mapping aus ganz X_tr. Unbekannte Werte -> globaler Mittelwert von y_tr.
+    """
+    from sklearn.model_selection import StratifiedKFold
+
+    y_tr = np.asarray(y_tr, dtype=float)
+    prior = y_tr.mean()
+    X_tr, X_va, X_te = X_tr.copy(), X_va.copy(), X_te.copy()
+    inner = list(StratifiedKFold(n_inner, shuffle=True, random_state=seed).split(np.zeros(len(y_tr)), y_tr))
+    for c in cols:
+        k_tr = X_tr[c].astype(str).values
+        oof = np.empty(len(y_tr))
+        for i_fit, i_enc in inner:
+            p_in = y_tr[i_fit].mean()
+            mp = _te_fit(k_tr[i_fit], y_tr[i_fit], m, p_in)
+            oof[i_enc] = pd.Series(k_tr[i_enc]).map(mp).fillna(p_in).values
+        mp = _te_fit(k_tr, y_tr, m, prior)
+        X_tr[f"{c}_te"] = oof
+        X_va[f"{c}_te"] = pd.Series(X_va[c].astype(str).values).map(mp).fillna(prior).values
+        X_te[f"{c}_te"] = pd.Series(X_te[c].astype(str).values).map(mp).fillna(prior).values
+    return X_tr, X_va, X_te
+
+
+def lgbm_te(params: dict | None = None, early_stopping: int = 200, m: float = 20.0, n_inner: int = 5):
+    """Fold-internes Target-Encoding (H06), danach exakt `lgbm` (gleiche Defaults/Early Stopping).
+
+    Encodiert CAT_COLS (bleiben zusätzlich als `category`) und alle Interaktions-Schlüssel
+    (String-Spalten mit `__` im Namen, z. B. aus Feature-Set v3); die Schlüssel werden danach entfernt.
+    """
+    base_fp = lgbm(params, early_stopping)
+
+    def fit_predict(X_tr, y_tr, X_va, y_va, X_te):
+        keys = [c for c in X_tr.columns if "__" in c and pd.api.types.is_string_dtype(X_tr[c])
+                and not isinstance(X_tr[c].dtype, pd.CategoricalDtype)]
+        cols = [c for c in CAT_COLS if c in X_tr.columns] + keys
+        X_tr, X_va, X_te = target_encode(X_tr, y_tr, X_va, X_te, cols, m=m, n_inner=n_inner)
+        X_tr, X_va, X_te = (X.drop(columns=keys) for X in (X_tr, X_va, X_te))
+        return base_fp(X_tr, y_tr, X_va, y_va, X_te)
+
+    return fit_predict
+
+
 MODELS = {"lgbm": lgbm, "xgb": xgb, "catboost": catboost, "logreg": logreg}
+MODELS["lgbm_te"] = lgbm_te
 
 
 def get(name: str, params: dict | None = None):

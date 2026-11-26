@@ -54,6 +54,23 @@ FEATURE_SETS = {"base": base, "v1": v1}
 JOINT_FEATURE_SETS = {"v2": v2}
 
 
+# v3 (H06): Interaktions-Schlüssel als Rohmaterial für fold-internes Target-Encoding
+# (src.models.lgbm_te). Die Schlüssel sind Strings und werden dort encodiert und entfernt.
+V3_INTERACTIONS = [("channel", "device_type"), ("auth_method", "channel"),
+                   ("merchant_category", "channel")]
+
+
+def v3(df: pd.DataFrame) -> pd.DataFrame:
+    """v1 + Interaktions-Schlüssel `<a>__<b>` (Strings, nur für Target-Encoding)."""
+    X = v1(df)
+    for a, b in V3_INTERACTIONS:
+        X[f"{a}__{b}"] = df[a].astype(str).values + "|" + df[b].astype(str).values
+    return X
+
+
+FEATURE_SETS["v3"] = v3
+
+
 def build(name: str, train: pd.DataFrame, test: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     if name in JOINT_FEATURE_SETS:
         return JOINT_FEATURE_SETS[name](train, test)
