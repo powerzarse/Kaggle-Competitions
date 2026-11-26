@@ -15,5 +15,6 @@ Erwarteter Gewinn × geringe Kosten = hohe Priorität. Ergebnisse → `learnings
 | H08 | P3 | todo | Originaldatensatz finden und als Zusatz-Trainingsdaten nutzen | Kaggle-Datasets suchen | – |
 | H09 | P3 | todo | Seed-Averaging (3 Seeds) für bestes GBDT | params `random_state` | – |
 | H10 | P2 | todo | CatBoost tiefer/länger (depth 8, lr 0.03) – Diversität beibehalten, Stärke steigern | params, teuer (~40 Min.) | – |
-| H11 | P1 | todo | Weitere diverse Modellfamilie (z. B. MLP oder LogReg auf v1 + One-Hot) für den Blend; Flag velocity_is_zero + log-Transformationen helfen linearen Modellen | `model=logreg` zuerst (billig) | – |
+| H11 | P1 | done | Weitere diverse Modellfamilie (z. B. MLP oder LogReg auf v1 + One-Hot) für den Blend; Flag velocity_is_zero + log-Transformationen helfen linearen Modellen | `model=logreg` zuerst (billig) | 06_logreg_v4 |
 | H12 | P3 | todo | Early Stopping auf dem Validierungs-Fold macht OOF leicht optimistisch → Runden per innerem Split bestimmen (sauberere CV, evtl. robustere Test-Preds) | Option in src/models.py, Vergleich auf bestem Modell | – |
+| H13 | P2 | todo | Mehr Nichtlinearität im diversen Modell schließt einen Teil der Lücke LogReg→GBDT (−0.0015) bei weiter niedriger Rang-Korr. → größerer Blend-Zuschlag | v5 = v4 + Bin×Bin-One-Hot (velocity_bin×merchant_risk_bin, amount_bin×channel, velocity_bin×txn_count_lvl) für LogReg (~1 Min.); bei Erfolg danach MLP auf v4 | – |

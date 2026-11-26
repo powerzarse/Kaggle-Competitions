@@ -4,6 +4,15 @@ Kurze, überprüfte Erkenntnisse. Jede Zeile: Was wurde geändert → Δ OOF-AUC
 Neueste oben. Der Researcher leitet daraus neue Hypothesen ab; nichts doppelt testen, was hier steht.
 
 ## Gesichert
+- [2026-11-26] 06_logreg_v4 (H11): LogReg (One-Hot + StandardScaler fold-intern in der Pipeline, C=1.0) auf neuem
+  Feature-Set v4 (v1 + velocity_is_zero, log1p-Spalten, feste Dezil-Bins, geclippte Zähler, 7 Flag-Interaktionen)
+  → OOF 0.94484, Δ −0.00147 zu 01_lgbm_baseline (0/5 Folds; nur Kontext) → neutral (divers, Blend-Kandidat).
+  Code geprüft, leakage-frei: Bin-Grenzen = exakt die Dezile über train+test (label-frei, nachgerechnet, als Konstanten),
+  v1–v3 unverändert, get_folds(). Rang-Korr. 0.967 (XGB) / 0.969 (LGBM) / 0.978 (Cat) / 0.976 (blend_hc) = diversestes
+  brauchbares Modell (04 ist diverser, aber schwach). Blend-Probe nachgerechnet: blend_hc-Ränge ×0.85 + 06 ×0.15 → 0.94697 (+0.00008, 5/5 Folds);
+  w 0.05–0.20 alle 5/5 Folds besser, w per 4-Fold gewählt und am 5. geprüft (genestet) → +0.00007 → echter, aber kleiner
+  Zuschlag (< min_delta). Lineares Modell auf Bins erfasst offenbar Monotonie-/Additivanteile anders als GBDTs; der
+  Abstand zu GBDTs (−0.0015) spricht für fehlende Interaktionen.
 - [2026-11-26] 05_lgbm_v3 (H06): fold-internes Target-Encoding (m-Estimate m=20, innere 5-fold-OOF auf X_tr)
   der 5 CAT_COLS + 3 Interaktionen channel×device_type / auth_method×channel / merchant_category×channel
   (40/25/60 Level), Kategorien bleiben `category` → Δ −0.00026 (1/5 Folds) → schlechter (knapp über min_delta).
