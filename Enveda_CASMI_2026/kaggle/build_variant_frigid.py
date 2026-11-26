@@ -73,6 +73,25 @@ _FG_PATCH_NEW = """        whl = uniq
             log(f'wheel filter skipped: {_e!r}')
 """
 
+_FG_PATCH2_OLD = "        log(f'site built: {len(whl)} wheels + sdists -> {site}')\n"
+_FG_PATCH2_NEW = """        # Linolium: Kaggle entpackt .tar.gz beim Hochladen; omegaconf und antlr4 liegen deshalb nur als Quellordner vor
+        # und werden von der *.tar.gz-Schleife nie installiert. Beide sind reines Python: Paketordner direkt kopieren.
+        for _pkg, _ver, _rel in (('omegaconf', '2.3.1', 'omegaconf-2.3.1/omegaconf-2.3.1/omegaconf'),
+                                 ('antlr4_python3_runtime', '4.9.3', 'antlr4-python3-runtime-4.9.3/antlr4-python3-runtime-4.9.3/src/antlr4')):
+            _srcd = assets / 'wheels_extra' / _rel
+            _dst = site / _srcd.name
+            if _srcd.is_dir() and not _dst.exists():
+                shutil.copytree(_srcd, _dst)
+                _di = site / f'{_pkg}-{_ver}.dist-info'
+                _di.mkdir(exist_ok=True)
+                (_di / 'METADATA').write_text(f'Metadata-Version: 2.1\\nName: {_pkg.replace(\"_\", \"-\")}\\nVersion: {_ver}\\n')
+                (_di / 'RECORD').write_text('')
+                log(f'copied source package {_srcd.name} {_ver}')
+            elif not _srcd.is_dir():
+                log(f'source package missing: {_rel}')
+        log(f'site built: {len(whl)} wheels + sdists -> {site}')
+"""
+
 _FG_WATCH = r"""import os, sys, json, time, subprocess
 from pathlib import Path
 os.nice(10)
@@ -85,9 +104,11 @@ try:
     runner = next(Path('/kaggle/input').rglob('frigid_runner_self.py'))
     test = next(p for p in Path('/kaggle/input').rglob('test.parquet') if 'mass-spectra' in str(p).lower())
     code = runner.read_text()
-    assert code.count(sys.argv[3]) == 1, 'runner patch anchor not found exactly once'
+    for a, b in json.loads(sys.argv[3]):
+        assert code.count(a) == 1, f'runner patch anchor not found exactly once: {a[:60]!r}'
+        code = code.replace(a, b)
     patched = WORK / 'frigid_runner_patched.py'
-    patched.write_text(code.replace(sys.argv[3], sys.argv[4]))
+    patched.write_text(code)
     spectra, formulas = str(test), WORK / 'frigid_formulas.tsv'
     # RDKit gehört nicht zum Image: die Pipeline installiert es erst nach dem Start dieses Prozesses
     import importlib, importlib.util, glob
@@ -150,9 +171,11 @@ try:
                HF_HUB_OFFLINE='1', CUDA_VISIBLE_DEVICES='1')
     cmd = [sys.executable, str(patched), '--auto-discover', '--setup', '--spectra', spectra, '--formulas', str(formulas),
            '--out', str(WORK / 'frigid_e1.jsonl'), '--deadline', str(deadline), '--device', 'cuda'] + limit
-    r = subprocess.run(cmd, env=env)
+    with open(WORK / 'frigid_runner.log', 'w') as lf:
+        r = subprocess.run(cmd, env=env, stdout=lf, stderr=subprocess.STDOUT)
     n = sum(1 for _ in open(WORK / 'frigid_e1.jsonl')) if (WORK / 'frigid_e1.jsonl').exists() else 0
-    st(state='done', returncode=r.returncode, records=n)
+    tail = (WORK / 'frigid_runner.log').read_text(errors='replace')[-2500:]
+    st(state='done', returncode=r.returncode, records=n, runner_log_tail=tail)
 except Exception as e:
     st(state='error', error=repr(e)[:400])
 """
@@ -160,7 +183,8 @@ except Exception as e:
 try:
     (_FG_WORK / 'frigid_watch.py').write_text(_FG_WATCH)
     FRIGID_PROC = _fg_sp.Popen([_fg_sys.executable, str(_FG_WORK / 'frigid_watch.py'), str(FRIGID_DEADLINE),
-                                '1' if _FG_RERUN else '0', _FG_PATCH_OLD, _FG_PATCH_NEW],
+                                '1' if _FG_RERUN else '0',
+                                _fg_json.dumps([[_FG_PATCH_OLD, _FG_PATCH_NEW], [_FG_PATCH2_OLD, _FG_PATCH2_NEW]])],
                                stdout=open(_FG_WORK / 'frigid_watch.log', 'w'), stderr=_fg_sp.STDOUT)
     print('[frigid] watcher started, pid', FRIGID_PROC.pid, '| rerun', _FG_RERUN,
           '| deadline at %.2f h' % ((FRIGID_DEADLINE - _FG_T0) / 3600), flush=True)
