@@ -1,0 +1,18 @@
+# Daten
+pandas
+numpy
+pyarrow
+scipy
+# ML
+scikit-learn
+lightgbm
+xgboost
+catboost
+optuna
+# Visualisierung / Notebook
+matplotlib
+seaborn
+jupyter
+ipykernel
+# API
+requests
