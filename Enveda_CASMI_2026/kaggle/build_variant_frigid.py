@@ -77,9 +77,12 @@ ORIGINAL = "https://www.kaggle.com/code/ishankarnick/casmi26-lb-0-509-47-7m-virt
 FRIGID_DATASETS = ["kvswim/frigidckpts-casmi26", "kvswim/frigiddeps-casmi26", "kvswim/frigidsrc-casmi26",
                    "gloriachen0816/frigidarm-runner-assets"]
 
-VARIANTS = {  # Ordner -> (Einfügeposition, Slug, Titel)
-    "frigid_r2": (2, "casmi26-frigid-r2", "CASMI26 FRIGID R2"),
-    "frigid_r3": (3, "casmi26-frigid-r3", "CASMI26 FRIGID R3"),
+VARIANTS = {  # Ordner -> (Einfügeposition, Rang-1-Schwelle (0 = aus), nur schwache Gruppe, Slug, Titel)
+    "frigid_r2": (2, 0.0, False, "casmi26-frigid-r2", "CASMI26 FRIGID R2"),
+    "frigid_r3": (3, 0.0, False, "casmi26-frigid-r3", "CASMI26 FRIGID R3"),
+    # B2: FRIGID nur für die schwache Gruppe (library_max < 0.825, positive Spektren)
+    "frigid_focus_r2": (2, 0.0, True, "casmi26-frigid-focus-r2", "CASMI26 FRIGID Focus R2"),
+    "frigid_focus_r1": (2, 0.90, True, "casmi26-frigid-focus-r1", "CASMI26 FRIGID Focus R1"),
 }
 
 WATCH_MD = """## Linolium · Baustein B: FRIGID-Kandidaten (Start)
@@ -93,6 +96,7 @@ import os as _fg_os, sys as _fg_sys, subprocess as _fg_sp, time as _fg_time, jso
 from pathlib import Path as _FG_Path
 
 _FG_WORK = _FG_Path('/kaggle/working')
+_FG_FOCUS = bool(int('__FOCUS__'))   # B2: FRIGID nur für Moleküle ohne starken Bibliothekstreffer
 _FG_RERUN = bool(_fg_os.getenv('KAGGLE_IS_COMPETITION_RERUN')) or bool(globals().get('IS_RERUN', False))
 _FG_T0 = float(globals().get('NB_T0', _fg_time.time()))
 FRIGID_DEADLINE = _FG_T0 + (7.5 if _FG_RERUN else 0.6) * 3600.0      # danach startet FRIGID kein neues Molekül
@@ -171,7 +175,7 @@ try:
     runner = next(Path('/kaggle/input').rglob('frigid_runner_self.py'))
     test = next(p for p in Path('/kaggle/input').rglob('test.parquet') if 'mass-spectra' in str(p).lower())
     code = runner.read_text()
-    for a, b in json.loads(sys.argv[3]):
+    for a, b in json.loads(sys.argv[4]):
         assert code.count(a) == 1, f'runner patch anchor not found exactly once: {a[:60]!r}'
         code = code.replace(a, b)
     patched = WORK / 'frigid_runner_patched.py'
@@ -224,6 +228,17 @@ try:
                     best = (d, CalcMolFormula(m))
             if best is not None:
                 rows.append((mid, best[1]))
+        n_all = len(rows)
+        if sys.argv[3] == '1':   # B2: nur die schwache Gruppe
+            lib = {}
+            ev = WORK / 'frozen_candidate_evidence.parquet'
+            if ev.exists():
+                d = pd.read_parquet(ev, columns=['molecule_id', 'library_max'])
+                lib = {str(m): float(v) for m, v in d.groupby('molecule_id', sort=False).library_max.first().items()}
+            posm = set(te[te.ionization_mode.astype(str).str.lower() == 'positive'].molecule_id.astype(str))
+            if lib:
+                rows = [(m, f) for m, f in rows if lib.get(m, 0.0) < 0.825 and m in posm]
+            st(state='focus', all_molecules=n_all, focus_molecules=len(rows), have_library_max=bool(lib))
         limit = ['--limit', '400']
     else:  # Commit-Lauf: Funktionstest auf zwei Molekülen mit positivem Spektrum
         pos = te[te.adduct.astype(str) == '[M+H]+'].molecule_id.astype(str).unique()[:2]
@@ -251,6 +266,7 @@ try:
     (_FG_WORK / 'frigid_watch.py').write_text(_FG_WATCH)
     FRIGID_PROC = _fg_sp.Popen([_fg_sys.executable, str(_FG_WORK / 'frigid_watch.py'), str(FRIGID_DEADLINE),
                                 '1' if _FG_RERUN else '0',
+                                '1' if _FG_FOCUS else '0',
                                 _fg_json.dumps([[_FG_PATCH_OLD, _FG_PATCH_NEW], [_FG_PATCH2_OLD, _FG_PATCH2_NEW],
                                             [_FG_PATCH3_OLD, _FG_PATCH3_NEW]])],
                                stdout=open(_FG_WORK / 'frigid_watch.log', 'w'), stderr=_fg_sp.STDOUT)
@@ -260,17 +276,18 @@ except Exception as _fg_exc:
     print('[frigid] watcher not started:', repr(_fg_exc)[:300], flush=True)
 '''
 
-MERGE_MD = """## Linolium · Baustein B: FRIGID-Kandidaten (Zusammenführung, Rang {pos})
+MERGE_MD = """## Linolium · Baustein B: FRIGID-Kandidaten (Zusammenführung, Rang {pos}{r1_text})
 
 Für Listen ohne starken Bibliothekstreffer (`library_max` < 0.90) kommt der erste FRIGID-Vorschlag mit
 Fingerprint-Ähnlichkeit ≥ 0.70 und höchstens 30 schweren Atomen auf **Rang {pos}**, sofern er nicht schon weiter oben steht.
-Rang 1 wird nie geändert; bei jedem Fehler bleibt die Abgabe unverändert."""
+{r1_rule}Bei jedem Fehler bleibt die Abgabe unverändert."""
 
 MERGE_CELL = r'''# ── Linolium · Baustein B: FRIGID-Kandidaten zusammenführen (Rang __POS__) ──
 import json as _fm_json, os as _fm_os, time as _fm_time, traceback as _fm_tb
 from pathlib import Path as _FM_Path
 
 _FM_POS = int('__POS__')     # Einfügeposition (2 = direkt hinter Rang 1)
+_FM_R1_SIM = float('__R1SIM__')   # ab dieser Ähnlichkeit auf Rang 1 (alter Spitzenkandidat auf Rang 2); 0 = nie
 _FM_GATE, _FM_MIN_SIM, _FM_MAX_HEAVY = 0.90, 0.70, 30
 
 
@@ -301,7 +318,8 @@ def _fm_merge(work):
             k = Chem.MolToInchiKey(m) if m is not None else ''
             cache[s] = k[:14] if k else None
         return cache[s]
-    n = dict(records=len(recs), library_gate=0, no_good_pred=0, already_top=0, inserted=0, moved=0)
+    n = dict(records=len(recs), library_gate=0, no_good_pred=0, already_top=0, inserted=0, moved=0, rank1=0)
+    r1_ids = set()
     out = []
     for mid, s in zip(sub.molecule_id.astype(str), sub.smiles):
         lst = [x for x in str(s).split(';') if x]
@@ -310,30 +328,34 @@ def _fm_merge(work):
             if lib.get(mid, 0.0) >= _FM_GATE:
                 n['library_gate'] += 1
             else:
-                best = None
+                best, best_sim = None, 0.0
                 for item in r['preds'][:10]:
                     smi, sim = item[0], float(item[2])
                     mol = Chem.MolFromSmiles(smi)
                     if mol is not None and mol.GetNumHeavyAtoms() <= _FM_MAX_HEAVY and sim >= _FM_MIN_SIM:
-                        best = smi
+                        best, best_sim = smi, sim
                         break
+                pos = 1 if (_FM_R1_SIM > 0 and best_sim >= _FM_R1_SIM) else _FM_POS
                 k = key14(best) if best else None
                 if k is None:
                     n['no_good_pred'] += 1
                 else:
                     keys = [key14(x) for x in lst]
-                    if k in keys[:_FM_POS]:
+                    if k in keys[:pos]:
                         n['already_top'] += 1
                     else:
                         if k in keys:
                             lst.pop(keys.index(k)); n['moved'] += 1
                         else:
                             lst = lst[:24] if len(lst) >= 25 else lst; n['inserted'] += 1
-                        lst.insert(_FM_POS - 1, best)
+                        lst.insert(pos - 1, best)
+                        if pos == 1:
+                            n['rank1'] += 1; r1_ids.add(mid)
         out.append(';'.join(lst[:25]))
     new = sub.copy(); new['smiles'] = out
     assert len(new) == len(sub) and (new.molecule_id == sub.molecule_id).all()
-    assert all(a.split(';')[0] == b.split(';')[0] for a, b in zip(new.smiles, sub.smiles)), 'rank 1 changed'
+    assert all(a.split(';')[0] == b.split(';')[0] for m, a, b in zip(new.molecule_id.astype(str), new.smiles, sub.smiles)
+               if m not in r1_ids), 'rank 1 changed outside the rank-1 rule'
     assert new.smiles.str.split(';').map(len).max() <= 25
     sub.to_csv(work / 'submission_before_frigid.csv', index=False)
     new.to_csv(str(sp) + '.fm_tmp', index=False); _fm_os.replace(str(sp) + '.fm_tmp', sp)
@@ -386,7 +408,7 @@ def shorten_markdown(nb):
             c["source"] = f"{head}\n\n*(Text gekürzt wegen Kaggles 1-MB-Grenze; vollständig im [Original]({ORIGINAL}).)*\n"
 
 
-def build(folder, pos, slug, title):
+def build(folder, pos, r1_sim, focus, slug, title):
     nb = json.loads((SRC / "vt_0509.ipynb").read_text())
     code_before = ["".join(c["source"]) for c in nb["cells"] if c["cell_type"] == "code"]
     idx = [i for i, c in enumerate(nb["cells"]) if c["cell_type"] == "code"
@@ -395,14 +417,20 @@ def build(folder, pos, slug, title):
     assert "VIRTUAL NATURAL-PRODUCT TIER" in "".join(nb["cells"][-1]["source"]), "letzte Zelle ist nicht der VT-Tier"
     md = lambda s: {"cell_type": "markdown", "metadata": {}, "source": s}
     cc = lambda s: {"cell_type": "code", "metadata": {}, "execution_count": None, "outputs": [], "source": s}
-    watch = (WATCH_CELL.replace("__LOGURU_B64__", base64.b64encode(LOGURU_SHIM.encode()).decode())
+    watch = (WATCH_CELL.replace("__FOCUS__", "1" if focus else "0").replace("__LOGURU_B64__", base64.b64encode(LOGURU_SHIM.encode()).decode())
              .replace("__OT_B64__", base64.b64encode(OT_SHIM.encode()).decode())
              .replace("__SELFIES_B64__", base64.b64encode(SELFIES_SHIM.encode()).decode()))
     nb["cells"][idx[0]:idx[0]] = [md(WATCH_MD), cc(watch)]
-    nb["cells"] += [md(MERGE_MD.format(pos=pos)), cc(MERGE_CELL.replace("__POS__", str(pos)))]
+    merge = MERGE_CELL.replace("__POS__", str(pos)).replace("__R1SIM__", str(r1_sim))
+    r1_text = f", ab Ähnlichkeit {r1_sim} Rang 1" if r1_sim else ""
+    r1_rule = (f"Erreicht der Vorschlag eine Ähnlichkeit von mindestens {r1_sim}, kommt er auf **Rang 1** und der bisherige "
+               f"Spitzenkandidat auf Rang 2. " if r1_sim else "Rang 1 wird nie geändert. ")
+    if focus:
+        r1_rule += "FRIGID läuft nur für Moleküle mit `library_max` < 0.825 und positiven Spektren. "
+    nb["cells"] += [md(MERGE_MD.format(pos=pos, r1_text=r1_text, r1_rule=r1_rule)), cc(merge)]
     shorten_markdown(nb)
     code_after = ["".join(c["source"]) for c in nb["cells"] if c["cell_type"] == "code"]
-    assert [s for s in code_after if s not in (watch, MERGE_CELL.replace("__POS__", str(pos)))] == code_before
+    assert [s for s in code_after if s not in (watch, merge)] == code_before
     meta = json.loads((SRC / "kernel-metadata.json").read_text())
     meta.update(id=f"linuszarse/{slug}", title=title, code_file=f"{folder}.ipynb", is_private=True)
     for d in FRIGID_DATASETS:
@@ -417,5 +445,5 @@ def build(folder, pos, slug, title):
 
 
 if __name__ == "__main__":
-    for folder, (pos, slug, title) in VARIANTS.items():
-        build(folder, pos, slug, title)
+    for folder, (pos, r1_sim, focus, slug, title) in VARIANTS.items():
+        build(folder, pos, r1_sim, focus, slug, title)
