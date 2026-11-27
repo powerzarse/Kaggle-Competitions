@@ -4,6 +4,22 @@ Kurze, überprüfte Erkenntnisse. Jede Zeile: Was wurde geändert → Δ OOF-AUC
 Neueste oben. Der Researcher leitet daraus neue Hypothesen ab; nichts doppelt testen, was hier steht.
 
 ## Gesichert
+- [2026-11-27] 10_glm_v6 (H15b): GLM = LogReg (C=1) auf logit(54 v6-TE, geclippt 1e-4) + 6 Flags + One-Hot(5 Kategorien),
+  TE via `vte_frames` wie 07 → OOF 0.95010, Δ −0.00009 zu 07 (2/5 Folds) → neutral, **Blend-Partner Nr. 1**. Ein lineares
+  Modell ist auf den TE-Logits so stark wie 4-Leaf-Bäume → Signal ist praktisch additiv in logit(TE). Code geprüft,
+  leakage-frei: X_tr-TE innere OOF, Val/Test-Mapping aus ganz X_tr, logit nur auf `_te`-Spalten aus `vte_frames`,
+  OneHot/StandardScaler in der Pipeline nur auf X_tr gefittet, kein Val-Label genutzt, get_folds(). Rang-Korr. 0.982 zu 07
+  (knapp über 0.98, Test 0.986). **Genestete Blend-Prüfung** (w(10) per Grid 0.05 auf 4 Folds gewählt, am 5. gemessen):
+  07+10 → **Δ +0.00039 zu 07, 5/5 Folds (+0.00026…+0.00061)**, gewählte w(10) stabil 0.40–0.50, gepoolt 0.95060
+  (In-Sample 0.5/0.5: 0.95061) → Blend-Gewinn ist echt (≈ 2×min_delta), kein Gewichts-Overfit; Ränge je Fold statt global
+  geben dasselbe (+0.00040). Damit erstmals ein Blend-Kandidat über 07; Verbesserungen am GLM (H16/H17) zahlen jetzt
+  direkt auf den Blend ein.
+- [2026-11-27] 09_xgb_v6_d2 (H15a): XGB max_depth 2 (lr 0.04 statt geplant 0.03, colsample 0.5) auf v6-TE via `vte_frames`
+  → OOF 0.95016, Δ −0.00003 zu 07 (2/5 Folds) → neutral, nicht divers (Rang-Korr. 0.995, Test 0.998). Zweites flaches
+  GBDT auf denselben TE-Spalten lernt dieselbe additive Funktion. Genestet: 07+09 +0.00009 (4/5, < min_delta);
+  07+09+10 (Grid auf 4 Folds) +0.00041 (5/5) vs. 07+10 +0.00039 → 09 legt nur +0.00002 drauf → kein Blend-Partner,
+  weitere GBDT-Varianten auf v6 nicht als Diversität testen. Refactoring geprüft: `vte_frames` ist eine 1:1-Auslagerung
+  der bisherigen TE-Zeilen aus `lgbm_vte` (gleiche Schlüsselauswahl, gleiche Argumente) → 07/08 bleiben reproduzierbar.
 - [2026-11-27] 07_lgbm_v6_l4 (H14): Feature-Set v6 (30 Rohspalten inkl. Cents + 54 Wert-/Ziffern-Schlüssel, fold-internes
   OOF-TE m=20 via `lgbm_vte`) + LGBM 4 Leaves (lr 0.03, colsample 0.5) → OOF 0.95019, **Δ +0.00388 zu 01_lgbm_baseline
   (5/5 Folds, +0.0026…+0.0053), Δ +0.00322 zu blend_02 (5/5 Folds)** → besser. **Neue Basis** (bestes Einzelmodell und besser

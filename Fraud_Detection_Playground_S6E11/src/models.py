@@ -268,3 +268,72 @@ def glm_vte(params: dict | None = None, m: float = 20.0, n_inner: int = 5, clip:
 
 
 MODELS["glm_vte"] = glm_vte
+
+
+def glmboost_vte(params: dict | None = None, early_stopping: int = 300, m: float = 20.0, n_inner: int = 5,
+                 clip: float = 1e-4, glm_C: float = 1.0, glm_oof: bool = True, n_glm_inner: int = 5):
+    """H16 GLM-Boost: TE wie lgbm_vte/glm_vte (`vte_frames`), GLM wie `glm_vte` (LogReg auf logit(TE) + Flags +
+    One-Hot), dann LightGBM (Defaults wie lgbm_vte) mit `init_score` = GLM-Logit -> LGBM lernt nur das Residuum.
+
+    glm_oof=True (Variante A): init_score für X_tr = innere n_glm_inner-Fold-OOF-Logits des GLM auf X_tr
+    (Seed SEED+1); für X_va/X_te das GLM auf ganz X_tr. glm_oof=False (Variante B): In-Sample-Logits für X_tr.
+    Early Stopping auf X_va mit eval_init_score; Vorhersage = sigmoid(raw_score + GLM-Logit).
+    `params` gehen an LightGBM."""
+    import lightgbm as lgb
+    from sklearn.compose import make_column_transformer
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.model_selection import StratifiedKFold
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+    from .config import BOOL_COLS
+
+    p = dict(objective="binary", learning_rate=0.03, num_leaves=4, min_child_samples=100,
+             subsample=0.8, subsample_freq=1, colsample_bytree=0.5, reg_lambda=1.0,
+             n_estimators=20000, random_state=SEED, verbose=-1)
+    p.update(params or {})
+
+    def fit_predict(X_tr, y_tr, X_va, y_va, X_te):
+        X_tr, X_va, X_te, keys = vte_frames(X_tr, y_tr, X_va, X_te, m=m, n_inner=n_inner)
+        te = [f"{c}_te" for c in keys]
+        cats = [c for c in CAT_COLS if c in X_tr.columns]
+        y = np.asarray(y_tr)
+
+        def prep(X):
+            Z = np.clip(X[te].to_numpy(np.float64), clip, 1 - clip)
+            out = pd.DataFrame(np.log(Z / (1 - Z)), columns=[f"{c}_logit" for c in te], index=X.index)
+            return pd.concat([out, X[BOOL_COLS].astype(np.float64), X[cats]], axis=1)
+
+        P_tr, P_va, P_te = prep(X_tr), prep(X_va), prep(X_te)
+        nums = [c for c in P_tr.columns if c not in cats]
+
+        def new_glm():
+            pre = make_column_transformer((OneHotEncoder(handle_unknown="ignore"), cats),
+                                          (StandardScaler(), nums))
+            return make_pipeline(pre, LogisticRegression(C=glm_C, max_iter=3000))
+
+        glm = new_glm().fit(P_tr, y)
+        g_va, g_te = glm.decision_function(P_va), glm.decision_function(P_te)
+        if glm_oof:
+            g_tr = np.empty(len(y))
+            skf = StratifiedKFold(n_glm_inner, shuffle=True, random_state=SEED + 1)
+            for i_fit, i_enc in skf.split(np.zeros(len(y)), y):
+                g_tr[i_enc] = new_glm().fit(P_tr.iloc[i_fit], y[i_fit]).decision_function(P_tr.iloc[i_enc])
+        else:
+            g_tr = glm.decision_function(P_tr)
+
+        mdl = lgb.LGBMClassifier(**p)
+        mdl.fit(X_tr, y, init_score=g_tr, eval_set=[(X_va, y_va)], eval_init_score=[g_va], eval_metric="auc",
+                callbacks=[lgb.early_stopping(early_stopping, verbose=False)])
+        sig = lambda z: 1.0 / (1.0 + np.exp(-z))  # noqa: E731
+        p_va = sig(mdl.predict(X_va, raw_score=True) + g_va)
+        p_te = sig(mdl.predict(X_te, raw_score=True) + g_te)
+        from sklearn.metrics import roc_auc_score
+        print(f"  keys {len(keys)} | features {X_tr.shape[1]} | glm_oof {glm_oof} | GLM-AUC tr {roc_auc_score(y, g_tr):.5f}"
+              f" va {roc_auc_score(y_va, g_va):.5f} | best_iter {mdl.best_iteration_}", flush=True)
+        return p_va, p_te
+
+    return fit_predict
+
+
+MODELS["glmboost_vte"] = glmboost_vte

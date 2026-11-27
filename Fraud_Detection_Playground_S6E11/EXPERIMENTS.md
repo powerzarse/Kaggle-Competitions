@@ -14,3 +14,4 @@
 | 2026-11-27 | 08_lgbm_v6_l2 | v6 | lgbm_vte | 0.95004 | 0.00343 |  | H14: Wert-/Ziffern-TE + flache Bäume (L2) |
 | 2026-11-27 | 09_xgb_v6_d2 | v6 | xgb_vte | 0.95016 | 0.00333 |  | H15a: XGB depth 2 auf v6-TE (Blend-Partner zu 07) |
 | 2026-11-27 | 10_glm_v6 | v6 | glm_vte | 0.95010 | 0.00335 |  | H15b: GLM auf logit(v6-TE) + Flags + One-Hot, C=1 (Blend-Partner zu 07) |
+| 2026-11-27 | blend_03 | - | rank-blend | 0.95061 | 0.00342 |  | 2 Modelle |
