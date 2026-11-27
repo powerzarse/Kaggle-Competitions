@@ -10,3 +10,5 @@
 | 2026-11-26 | 05_lgbm_v3 | v3 | lgbm_te | 0.94605 | 0.00317 |  | H06: fold-internes Target-Encoding + 3 Interaktionen |
 | 2026-11-26 | 06_logreg_v4 | v4 | logreg | 0.94484 | 0.00308 |  | H11: LogReg auf v4 als diverses Blend-Mitglied |
 | 2026-11-26 | blend_02 | - | rank-blend | 0.94698 | 0.00323 |  | 4 Modelle |
+| 2026-11-27 | 07_lgbm_v6_l4 | v6 | lgbm_vte | 0.95019 | 0.00350 |  | H14: Wert-/Ziffern-TE + flache Bäume (L4) |
+| 2026-11-27 | 08_lgbm_v6_l2 | v6 | lgbm_vte | 0.95004 | 0.00343 |  | H14: Wert-/Ziffern-TE + flache Bäume (L2) |
