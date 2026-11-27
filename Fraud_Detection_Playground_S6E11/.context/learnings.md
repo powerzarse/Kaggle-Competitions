@@ -4,6 +4,26 @@ Kurze, überprüfte Erkenntnisse. Jede Zeile: Was wurde geändert → Δ OOF-AUC
 Neueste oben. Der Researcher leitet daraus neue Hypothesen ab; nichts doppelt testen, was hier steht.
 
 ## Gesichert
+- [2026-11-27] 07_lgbm_v6_l4 (H14): Feature-Set v6 (30 Rohspalten inkl. Cents + 54 Wert-/Ziffern-Schlüssel, fold-internes
+  OOF-TE m=20 via `lgbm_vte`) + LGBM 4 Leaves (lr 0.03, colsample 0.5) → OOF 0.95019, **Δ +0.00388 zu 01_lgbm_baseline
+  (5/5 Folds, +0.0026…+0.0053), Δ +0.00322 zu blend_02 (5/5 Folds)** → besser. **Neue Basis** (bestes Einzelmodell und besser
+  als jeder bisherige Blend). Ursache: Label-first-generierte Daten → jeder exakte Wert/jede Ziffer trägt fast additives Signal,
+  das flache Bäume auf geglättetem TE abgreifen. Code geprüft, leakage-frei: TE nur aus y_tr, X_tr per innerer 5-Fold-OOF
+  encodet (nicht In-Sample), X_va/X_te mit Mapping aus ganz X_tr, gemeinsames `factorize` nur label-frei, Schlüssel danach
+  entfernt, v1–v4 und alte Factories unverändert, get_folds(). Gegenproben Fold 0 (lr 0.1, Basis 0.94867): y_tr permutiert →
+  AUC 0.494; + Zufallsschlüssel (30k Level) + id als Schlüssel → 0.94850 (−0.0002, kein Gewinn); Einzel-TE amount_usd__key:
+  AUC 0.540 OOF-Train / 0.555 Val vs. 0.739 bei In-Sample-TE → kein Train/Val-Bruch. Test-Mittel = OOF-Mittel (0.0168).
+  Rang-Korr. 0.954 zu 01/02, 0.959 zu blend_02. Blend-Probe (In-Sample): 07 ×0.8 + blend_02-Ränge ×0.2 → 0.95033 (+0.00014)
+  < min_delta → v1-Modelle bringen im Blend praktisch nichts mehr. **Relativiert**: (1) alle Befunde auf v1 (01–06, blend_hc,
+  blend_02, „63 Leaves Referenz“) sind nur noch Kontext, Vergleichsmaßstab ab jetzt 07; (2) H06-Learning „TE bringt GBDTs
+  nichts“ gilt nur für niedrigkardinale Kategorien – geglättetes TE *hochkardinaler* Wert-/Ziffern-Schlüssel ist der Hebel;
+  (3) H05 bleibt: dieselben Werte als *native* Kategorie overfitten; (4) Blend-Hebel „diverses Modell OOF ≥ ~0.945“ ist
+  überholt – Partner müssen auf v6-TE aufsetzen (H15/H16) und ≥ ~0.949 erreichen. Early Stopping auf Val wie bisher (H12).
+- [2026-11-27] 08_lgbm_v6_l2 (H14, Ablation): wie 07, aber 2 Leaves (Stümpfe) → OOF 0.95004, Δ −0.00015 zu 07 (07 besser in
+  4/5 Folds) → neutral ggü. 07 (ggü. alter Basis besser, Δ +0.00373, 5/5). Rang-Korr. 0.993 zu 07 (nicht divers);
+  07+08 Rank-Mittel 0.95031 (+0.00012 < min_delta). 2 vs. 4 Leaves ist innerhalb des Seed-Rauschens des inneren TE
+  (bis 0.0008 auf Fold 0, lr 0.1) nicht unterscheidbar → Signal ist fast rein additiv; 4 Leaves als Default behalten,
+  Leaves-Ablation erst mit TE-Seed-Mittelung (H20) wiederholen.
 - [2026-11-26] blend_02 (Z1-Blend): Rank-Blend + Hill Climbing über 01/02/03/06 (keine rejected; max. Rang-Korr. 0.989 < 0.995)
   → Gewichte LGBM 0.286 / XGB 0.429 / Cat 0.143 / LogReg 0.143 → OOF 0.94698. Δ +0.00008 zu blend_hc (5/5 Folds,
   +0.00005…+0.00014), Δ +0.00044 zu 02_xgb_v1 (5/5 Folds) = erstmals ≥ 2×min_delta ggü. bestem Einzelmodell.
