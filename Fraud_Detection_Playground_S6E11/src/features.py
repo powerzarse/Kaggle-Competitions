@@ -116,3 +116,36 @@ def v4(df: pd.DataFrame) -> pd.DataFrame:
 
 
 FEATURE_SETS["v4"] = v4
+
+
+# v6 (H14): Rohspalten + Cents der 6 Floats + Wert-/Ziffern-Schlüssel als Rohmaterial für fold-internes
+# Target-Encoding (src.models.lgbm_vte). Schlüssel = String-Spalten mit Suffix `__key`; sie werden dort
+# encodiert und entfernt. Hier fließen keine Labels ein.
+V6_FLOAT_COLS = ["amount_usd", "hours_since_last_txn", "distance_from_home_km", "account_balance_usd",
+                 "velocity_score", "merchant_risk_score"]
+
+
+def v6(df: pd.DataFrame) -> pd.DataFrame:
+    """base + cents_<c> (Zahl) + 24 Wert-Schlüssel + 5 Ziffern-Schlüssel je Float (cents/int/ten/dec/l2)."""
+    X = base(df)
+    for c in V6_FLOAT_COLS:
+        X[f"cents_{c}"] = np.round(df[c].values * 100) % 100
+    for c in NUM_COLS + BOOL_COLS + CAT_COLS:
+        X[f"{c}__key"] = df[c].astype(str).values
+    for c in V6_FLOAT_COLS:
+        x = df[c].values.astype(float)
+        i = np.floor(x).astype(np.int64)
+        i_str = pd.Series(i).astype(str)
+        digits = {
+            "cents": (np.round(x * 100) % 100).astype(np.int64),
+            "int": i,
+            "ten": np.floor(x / 10).astype(np.int64),
+            "dec": np.floor(x * 10 + 1e-6).astype(np.int64),
+            "l2": (i_str.str.len() * 100 + i_str.str[:2].astype(int)).values,
+        }
+        for name, v in digits.items():
+            X[f"{c}__{name}__key"] = pd.Series(v).astype(str).values
+    return X
+
+
+FEATURE_SETS["v6"] = v6

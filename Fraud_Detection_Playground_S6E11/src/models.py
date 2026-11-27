@@ -136,3 +136,65 @@ def get(name: str, params: dict | None = None):
     """Jede Factory akzeptiert `params` (überschreibt die Defaults)."""
     return MODELS[name](params=params)
 
+
+
+def target_encode_keys(X_tr, y_tr, X_va, X_te, cols, m=20.0, n_inner=5, seed=SEED):
+    """Vektorisierte Variante von `target_encode` (gleiche Semantik) für viele hochkardinale Schlüssel.
+
+    Gibt drei DataFrames mit den Spalten `<c>_te` zurück (float32). Codes per pd.factorize über
+    X_tr/X_va/X_te gemeinsam (label-frei), Raten per np.bincount.
+    X_tr: OOF über innere StratifiedKFold-Splits (Prior = Mittel des inneren Fit-Teils);
+    X_va/X_te: Mapping aus ganz X_tr (Prior = Mittel von y_tr); unbekannte Werte -> Prior.
+    """
+    from sklearn.model_selection import StratifiedKFold
+
+    y = np.asarray(y_tr, dtype=float)
+    n_tr, n_va = len(X_tr), len(X_va)
+    prior = y.mean()
+    inner = list(StratifiedKFold(n_inner, shuffle=True, random_state=seed).split(np.zeros(n_tr), y))
+    out = {k: {} for k in ("tr", "va", "te")}
+
+    def rate(codes, yy, n, p):
+        return (np.bincount(codes, weights=yy, minlength=n) + m * p) / (np.bincount(codes, minlength=n) + m)
+
+    for c in cols:
+        codes = pd.factorize(np.concatenate([X_tr[c].values, X_va[c].values, X_te[c].values]))[0]
+        n = codes.max() + 1
+        k_tr, k_va, k_te = codes[:n_tr], codes[n_tr:n_tr + n_va], codes[n_tr + n_va:]
+        oof = np.empty(n_tr)
+        for i_fit, i_enc in inner:
+            # ungesehene Werte haben count 0 -> rate = Prior des inneren Fit-Teils
+            oof[i_enc] = rate(k_tr[i_fit], y[i_fit], n, y[i_fit].mean())[k_tr[i_enc]]
+        full = rate(k_tr, y, n, prior)  # Werte, die nur in Val/Test vorkommen -> Prior
+        out["tr"][f"{c}_te"] = oof.astype(np.float32)
+        out["va"][f"{c}_te"] = full[k_va].astype(np.float32)
+        out["te"][f"{c}_te"] = full[k_te].astype(np.float32)
+    return tuple(pd.DataFrame(out[k], index=X.index) for k, X in (("tr", X_tr), ("va", X_va), ("te", X_te)))
+
+
+def lgbm_vte(params: dict | None = None, early_stopping: int = 300, m: float = 20.0, n_inner: int = 5):
+    """H14: fold-internes TE aller Wert-/Ziffern-Schlüssel (String-Spalten mit Suffix `__key`, z. B. aus v6),
+    Schlüssel danach entfernen, dann LightGBM mit flachen Bäumen (Defaults: 4 Leaves, lr 0.03, colsample 0.5)."""
+    import lightgbm as lgb
+
+    p = dict(objective="binary", learning_rate=0.03, num_leaves=4, min_child_samples=100,
+             subsample=0.8, subsample_freq=1, colsample_bytree=0.5, reg_lambda=1.0,
+             n_estimators=20000, random_state=SEED, verbose=-1)
+    p.update(params or {})
+
+    def fit_predict(X_tr, y_tr, X_va, y_va, X_te):
+        keys = [c for c in X_tr.columns if c.endswith("__key") and pd.api.types.is_string_dtype(X_tr[c])
+                and not isinstance(X_tr[c].dtype, pd.CategoricalDtype)]
+        E_tr, E_va, E_te = target_encode_keys(X_tr, y_tr, X_va, X_te, keys, m=m, n_inner=n_inner)
+        X_tr, X_va, X_te = (pd.concat([X.drop(columns=keys), E], axis=1)
+                            for X, E in ((X_tr, E_tr), (X_va, E_va), (X_te, E_te)))
+        mdl = lgb.LGBMClassifier(**p)
+        mdl.fit(X_tr, y_tr, eval_set=[(X_va, y_va)], eval_metric="auc",
+                callbacks=[lgb.early_stopping(early_stopping, verbose=False)])
+        print(f"  keys {len(keys)} | features {X_tr.shape[1]} | best_iter {mdl.best_iteration_}", flush=True)
+        return mdl.predict_proba(X_va)[:, 1], mdl.predict_proba(X_te)[:, 1]
+
+    return fit_predict
+
+
+MODELS["lgbm_vte"] = lgbm_vte
