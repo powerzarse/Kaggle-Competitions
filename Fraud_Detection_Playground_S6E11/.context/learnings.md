@@ -4,6 +4,21 @@ Kurze, überprüfte Erkenntnisse. Jede Zeile: Was wurde geändert → Δ OOF-AUC
 Neueste oben. Der Researcher leitet daraus neue Hypothesen ab; nichts doppelt testen, was hier steht.
 
 ## Gesichert
+- [2026-11-27] 11_glmboost_v6 (H16): GLM-Boost = LGBM 4 Leaves (Defaults wie 07) mit `init_score` = GLM-Logit (GLM wie 10,
+  C=1; X_tr innere 5-Fold-OOF-Logits, X_va/X_te vom GLM auf ganz X_tr) → OOF 0.95059, **Δ +0.00040 zu 07 (4/5 Folds,
+  Fold 1 −0.00002)** → besser, **neues bestes Einzelmodell**; ggü. blend_03 (07+10) Δ −0.00002 (2/5) → gleichwertig.
+  Das GLM trägt den additiven Teil, LGBM lernt nur das Residuum (best_iter 391–1114 statt 1722–2754) → 11 ist praktisch
+  „07+10 in einem Modell“ (Rang-Korr. 0.996 zu 10, 0.988 zu 07; Test 0.997/0.991). Code geprüft, leakage-frei: neue Factory
+  rein additiv (lgbm_vte/glm_vte unverändert), get_folds(); innere GLM-Fits nur auf X_tr-Teilen und auf den schon
+  OOF-encodeten X_tr-TE-Spalten (OOF-GLM-AUC tr 0.948–0.951 ≈ Val → kein Train/Val-Bruch); `eval_init_score` beim Early
+  Stopping, Vorhersage sigmoid(raw_score + GLM-Logit) für Val und Test; Test-Mittel 0.01669 = OOF-Mittel 0.01674. Rest-Effekt
+  zweiter Ordnung: TE-Split (Seed 42) ≠ GLM-Split (Seed 43) → TE der Fit-Zeilen enthält Labels der Enc-Zeilen (unvermeidbar
+  ohne genestetes TE, im Log nicht sichtbar). Smoke A (OOF) vs. B (In-Sample) 0.94974 vs. 0.94979 (Fold 0, lr 0.1) → kein
+  Unterschied; B ist ~4× schneller. **Genestete Blend-Prüfung** (Grid 0.05 auf 4 Folds, am 5. gemessen): 07+10+11 → gepoolt
+  0.95070, **Δ +0.00010 zu blend_03 (4/5)**, +0.00011 zu 11 (4/5, Fold 4 −0.00016); Gewichte stabil 07 0.30–0.40 / 10 0.05–0.10 /
+  11 0.50–0.65; 07+11 allein (w(07) 0.30–0.40) liefert dasselbe (+0.00011) → 10 ist in 11 aufgegangen, 07 legt noch etwas
+  drauf, aber alles < min_delta. In-Sample: 07/10/11 = 0.35/0.05/0.60 → 0.95072, 0.3/0/0.7 → 0.95071, je 1/3 → 0.95068.
+  Folge: GLM-Verbesserungen (H17) zahlen jetzt direkt auf das beste Einzelmodell ein.
 - [2026-11-27] 10_glm_v6 (H15b): GLM = LogReg (C=1) auf logit(54 v6-TE, geclippt 1e-4) + 6 Flags + One-Hot(5 Kategorien),
   TE via `vte_frames` wie 07 → OOF 0.95010, Δ −0.00009 zu 07 (2/5 Folds) → neutral, **Blend-Partner Nr. 1**. Ein lineares
   Modell ist auf den TE-Logits so stark wie 4-Leaf-Bäume → Signal ist praktisch additiv in logit(TE). Code geprüft,
