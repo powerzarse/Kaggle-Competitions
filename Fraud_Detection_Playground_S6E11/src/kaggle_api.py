@@ -8,6 +8,7 @@ injiziert der Proxy die Zugangsdaten automatisch – dann geht es ganz ohne Key.
     python -m src.kaggle_api download
     python -m src.kaggle_api limits
     python -m src.kaggle_api submissions
+    python -m src.kaggle_api leaderboard
     python -m src.kaggle_api submit submissions/01_lgbm_baseline.csv "LGBM baseline | CV 0.94631"
 """
 import json
@@ -80,6 +81,35 @@ def submissions(n: int = 10, quiet: bool = False) -> list[dict]:
     return rows
 
 
+def leaderboard(my_score: float | None = None, quiet: bool = False) -> dict:
+    """Ganzes Public-LB laden; Quantile, eigener Rang und Rang eines hypothetischen Scores."""
+    import io
+
+    import pandas as pd
+
+    r = _session().get(f"{BASE}/competitions/{COMPETITION}/leaderboard/download")
+    r.raise_for_status()
+    with zipfile.ZipFile(io.BytesIO(r.content)) as z:
+        lb = pd.read_csv(z.open(z.namelist()[0]))
+    s = lb["Score"].sort_values(ascending=False).reset_index(drop=True)
+    best = [x for x in submissions(50, quiet=True) if x.get("publicScore")]
+    mine = max((float(x["publicScore"]) for x in best), default=None)
+    out = {"teams": len(s), "top1": s.iloc[0], "top10": s.iloc[min(9, len(s) - 1)],
+           "top50": s.iloc[min(49, len(s) - 1)], "median": s.median(), "my_best": mine,
+           "my_rank": int((s > mine).sum() + 1) if mine is not None else None}
+    if my_score is not None:
+        out["rank_if"] = int((s > my_score).sum() + 1)
+    if not quiet:
+        print(f"LB: {out['teams']} Teams · #1 {out['top1']:.5f} · #10 {out['top10']:.5f} · "
+              f"#50 {out['top50']:.5f} · Median {out['median']:.5f}")
+        if mine is not None:
+            print(f"Wir: {mine:.5f} → Rang {out['my_rank']}/{out['teams']} "
+                  f"(Top {100 * out['my_rank'] / out['teams']:.0f} %), Abstand zu #1 {out['top1'] - mine:+.5f}")
+        if my_score is not None:
+            print(f"Mit {my_score:.5f} wären wir auf Rang {out['rank_if']}")
+    return out
+
+
 def submit(path: str, message: str, wait: bool = True) -> dict | None:
     p = Path(path)
     # 1) Upload-URL holen
@@ -116,7 +146,9 @@ if __name__ == "__main__":
         limits()
     elif cmd == "submissions":
         submissions()
+    elif cmd == "leaderboard":
+        leaderboard(float(args[0]) if args else None)
     elif cmd == "submit":
         submit(args[0], args[1] if len(args) > 1 else Path(args[0]).stem)
     else:
-        sys.exit(f"unbekannter Befehl: {cmd} (download | limits | submissions | submit <csv> [msg])")
+        sys.exit(f"unbekannter Befehl: {cmd} (download | limits | submissions | leaderboard [score] | submit <csv> [msg])")

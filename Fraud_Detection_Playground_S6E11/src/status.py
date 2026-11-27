@@ -1,4 +1,4 @@
-"""Kompakter Lagebericht für Agenten: Rangliste, LB-Scores, Diversität, Submission-Budget.
+"""Kompakter Lagebericht für Agenten: Rangliste, LB-Scores, Diversität, Budget, LB-Position.
 
     python -m src.status            # inkl. Kaggle-Abfrage (Limits, letzte Scores)
     python -m src.status --offline  # nur lokale Ergebnisse
@@ -53,6 +53,8 @@ def main(offline: bool = False) -> None:
         print()
         kaggle_api.limits()
         kaggle_api.submissions(5)
+        print()
+        kaggle_api.leaderboard(my_score=best)
 
 
 if __name__ == "__main__":

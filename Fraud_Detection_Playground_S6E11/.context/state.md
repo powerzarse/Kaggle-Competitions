@@ -1,10 +1,9 @@
-# State  (aktualisiert: 2026-11-26 14:00 UTC, Zyklus Z1 abgeschlossen)
-- Deadline: 2026-11-30 23:59 UTC (noch 4 Tage) · Submissions heute übrig: 8
+# State  (aktualisiert: 2026-11-27, Zyklus Z2 läuft)
+- Deadline: 2026-11-30 23:59 UTC (noch 3 Tage) · Submissions heute übrig: 10
+- LB-Position: Rang 2346/3338 (Top 70 %) · #1 0.97051 · #50 0.95767 · Median 0.94920
 - Bestes Einzelmodell: 02_xgb_v1 CV 0.94653 (LB –)
-- Bester Blend: blend_02 CV 0.94698 (LGBM .286 / XGB .429 / Cat .143 / LogReg .143, LB –, nicht eingereicht:
-  +0.00008 zu blend_hc < min_delta)
+- Bester Blend: blend_02 CV 0.94698 (LB –, nicht eingereicht)
 - Beste eingereichte CV: 0.94689 (blend_hc, LB 0.94683)
-- Laufende Jobs: keine
-- Nächster Schritt (Z2): H07 LGBM/XGB-Tuning (Optuna auf 1 Fold), H13 LogReg v5 mit Bin×Bin-Interaktionen,
-  danach H10 (CatBoost größer) bzw. H09 (Seeds) → neuer Blend
+- Laufende Jobs: Researcher „LB-Lücke“ (Notebooks, Diskussionen, Originaldaten)
+- Nächster Schritt: Befunde des Researchers → P0-Hypothesen umsetzen; Tuning (H07) zurückgestellt
 - Offene Fragen an den Menschen: keine

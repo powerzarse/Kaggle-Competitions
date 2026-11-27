@@ -9,3 +9,6 @@ Ein Eintrag pro Zyklus (append-only, neueste unten): Datum · Zyklus · was gela
 - 2026-11-26 · Z1 · blend_hc eingereicht (LB 0.94683). H05 04_lgbm_v2 0.93902 (rejected), H06 05_lgbm_v3 0.94605
   (rejected), H11 06_logreg_v4 0.94484 (neutral, divers 0.967) → blend_02 0.94698 (+0.00008, nicht eingereicht).
   Neu: H12, H13. Priorität auf Tuning (H07) und diverse Modelle (H13) verschoben.
+- 2026-11-27 · Z2 · Lücken-Check: LB-Median 0.9492, #50 0.9577, #1 0.9705 – wir 0.94683 (Rang 2346/3338).
+  System-Fix: src.status zeigt LB-Position, Orchestrator macht Lücken-Check, Researcher sichtet zuerst
+  öffentliche Notebooks/Datasets. Researcher mit Fokus „Lücke“ gestartet.

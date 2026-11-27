@@ -15,7 +15,11 @@ einem Treffer diesen nehmen, sonst fragen.
 ## Zyklus
 1. **Lagebild** (immer zuerst)
    - Lies `COMP/.context/rules.md`, `state.md`, `learnings.md`, `backlog.md`.
-   - `cd COMP && python -m src.status` (Rangliste, Diversität, Submission-Budget).
+   - `cd COMP && python -m src.status` (Rangliste, Diversität, Submission-Budget, **LB-Position**).
+   - **Lücken-Check**: Liegt unser bester LB-Score unter dem LB-Median oder > 0.005 hinter Platz 50,
+     fehlt meist ein grundlegender Baustein (Originaldaten, bekanntes Feature, Datenartefakt).
+     Dann zuerst den **Researcher** mit Fokus „Lücke“ beauftragen (öffentliche Notebooks,
+     Diskussionen, Datasets) – nicht tunen.
    - Laufen noch Jobs aus `state.md`? → Logs prüfen (`experiments/*/run.log`). Fertige Jobs → Schritt 4.
 2. **Planen**
    - Weniger als 3 `todo`-Einträge im Backlog oder letzte 3 Experimente ohne Gewinn
@@ -46,6 +50,7 @@ nicht pollen – der Abschluss kommt als Benachrichtigung.
 ```markdown
 # State  (aktualisiert: <Datum Uhrzeit UTC>, Zyklus Z<n>)
 - Deadline: <Datum> (noch <x> Tage) · Submissions heute übrig: <n>
+- LB-Position: Rang <r>/<n> (Top <p> %) · #1 <x> · #50 <x> · Median <x>
 - Bestes Einzelmodell: <name> CV <x> (LB <y>)
 - Bester Blend: <name> CV <x> (LB <y>)
 - Beste eingereichte CV: <x> (<name>)

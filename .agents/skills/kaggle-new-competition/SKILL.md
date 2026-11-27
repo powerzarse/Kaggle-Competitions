@@ -20,7 +20,8 @@ Referenz-Implementierung: `Fraud_Detection_Playground_S6E11/` (binäre Klassifik
 3. `src/config.py`: `COMPETITION`, `ID`, `TARGET`, `METRIC`, Spaltenlisten anpassen.
    Andere Metrik/Aufgabe → `src/cv.py` (Scorer, Stratifizierung) und `src/models.py` (Objective) anpassen;
    Regression: `KFold` statt `StratifiedKFold`, `predict` statt `predict_proba`.
-4. Daten laden (Skill `kaggle-data`), kurze EDA.
+4. Daten laden (Skill `kaggle-data`), kurze EDA. **Researcher** sofort öffentliche Notebooks, Diskussionen
+   und Originaldatensatz sichten lassen (Rolle `researcher.md`) – bevor eigene Feature-Ideen getestet werden.
 5. `.context/` anlegen (Dateien wie in der Referenz): `competition.md` mit echten Fakten,
    `rules.md` (Defaults übernehmen, `auto_submit: false`), leeres `learnings.md`, `journal.md`,
    `state.md`, und ein `backlog.md` mit 5–8 Start-Hypothesen (Baseline zuerst).
