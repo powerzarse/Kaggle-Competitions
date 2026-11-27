@@ -172,6 +172,17 @@ def target_encode_keys(X_tr, y_tr, X_va, X_te, cols, m=20.0, n_inner=5, seed=SEE
     return tuple(pd.DataFrame(out[k], index=X.index) for k, X in (("tr", X_tr), ("va", X_va), ("te", X_te)))
 
 
+def vte_frames(X_tr, y_tr, X_va, X_te, m: float = 20.0, n_inner: int = 5):
+    """Gemeinsamer TE-Schritt von lgbm_vte/xgb_vte/glm_vte: alle `__key`-Spalten (Strings) fold-intern per
+    `target_encode_keys` encodieren, Schlüssel entfernen, `<c>_te` anhängen. -> (X_tr, X_va, X_te, keys)."""
+    keys = [c for c in X_tr.columns if c.endswith("__key") and pd.api.types.is_string_dtype(X_tr[c])
+            and not isinstance(X_tr[c].dtype, pd.CategoricalDtype)]
+    E_tr, E_va, E_te = target_encode_keys(X_tr, y_tr, X_va, X_te, keys, m=m, n_inner=n_inner)
+    X_tr, X_va, X_te = (pd.concat([X.drop(columns=keys), E], axis=1)
+                        for X, E in ((X_tr, E_tr), (X_va, E_va), (X_te, E_te)))
+    return X_tr, X_va, X_te, keys
+
+
 def lgbm_vte(params: dict | None = None, early_stopping: int = 300, m: float = 20.0, n_inner: int = 5):
     """H14: fold-internes TE aller Wert-/Ziffern-Schlüssel (String-Spalten mit Suffix `__key`, z. B. aus v6),
     Schlüssel danach entfernen, dann LightGBM mit flachen Bäumen (Defaults: 4 Leaves, lr 0.03, colsample 0.5)."""
@@ -183,11 +194,7 @@ def lgbm_vte(params: dict | None = None, early_stopping: int = 300, m: float = 2
     p.update(params or {})
 
     def fit_predict(X_tr, y_tr, X_va, y_va, X_te):
-        keys = [c for c in X_tr.columns if c.endswith("__key") and pd.api.types.is_string_dtype(X_tr[c])
-                and not isinstance(X_tr[c].dtype, pd.CategoricalDtype)]
-        E_tr, E_va, E_te = target_encode_keys(X_tr, y_tr, X_va, X_te, keys, m=m, n_inner=n_inner)
-        X_tr, X_va, X_te = (pd.concat([X.drop(columns=keys), E], axis=1)
-                            for X, E in ((X_tr, E_tr), (X_va, E_va), (X_te, E_te)))
+        X_tr, X_va, X_te, keys = vte_frames(X_tr, y_tr, X_va, X_te, m=m, n_inner=n_inner)
         mdl = lgb.LGBMClassifier(**p)
         mdl.fit(X_tr, y_tr, eval_set=[(X_va, y_va)], eval_metric="auc",
                 callbacks=[lgb.early_stopping(early_stopping, verbose=False)])
@@ -198,3 +205,66 @@ def lgbm_vte(params: dict | None = None, early_stopping: int = 300, m: float = 2
 
 
 MODELS["lgbm_vte"] = lgbm_vte
+
+
+def xgb_vte(params: dict | None = None, early_stopping: int = 300, m: float = 20.0, n_inner: int = 5):
+    """H15a: gleicher fold-interner TE-Schritt wie lgbm_vte (`vte_frames`), dann XGBoost mit Tiefe 2
+    (hist, Kategorien nativ per enable_categorical wie in `xgb`)."""
+    import xgboost as xgb_
+
+    p = dict(objective="binary:logistic", eval_metric="auc", learning_rate=0.04, max_depth=2,
+             subsample=0.8, colsample_bytree=0.5, min_child_weight=5, reg_lambda=1.0, n_estimators=20000,
+             tree_method="hist", enable_categorical=True, random_state=SEED,
+             early_stopping_rounds=early_stopping)
+    p.update(params or {})
+
+    def fit_predict(X_tr, y_tr, X_va, y_va, X_te):
+        X_tr, X_va, X_te, keys = vte_frames(X_tr, y_tr, X_va, X_te, m=m, n_inner=n_inner)
+        mdl = xgb_.XGBClassifier(**p)
+        mdl.fit(X_tr, y_tr, eval_set=[(X_va, y_va)], verbose=False)
+        print(f"  keys {len(keys)} | features {X_tr.shape[1]} | best_iter {mdl.best_iteration}", flush=True)
+        return mdl.predict_proba(X_va)[:, 1], mdl.predict_proba(X_te)[:, 1]
+
+    return fit_predict
+
+
+MODELS["xgb_vte"] = xgb_vte
+
+
+def glm_vte(params: dict | None = None, m: float = 20.0, n_inner: int = 5, clip: float = 1e-4):
+    """H15b: GLM = LogisticRegression auf logit(TE) der `__key`-Spalten (TE wie lgbm_vte, geclippt auf
+    [clip, 1-clip]) + BOOL_COLS + One-Hot(CAT_COLS); StandardScaler/OneHot fold-intern in der Pipeline.
+    Rohe Zahlen und Cents gehen nicht ein (stecken als exakter Wert/Ziffer im TE)."""
+    from sklearn.compose import make_column_transformer
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+    from .config import BOOL_COLS
+
+    lr_p = {"C": 1.0, "max_iter": 3000, **(params or {})}
+
+    def fit_predict(X_tr, y_tr, X_va, y_va, X_te):
+        X_tr, X_va, X_te, keys = vte_frames(X_tr, y_tr, X_va, X_te, m=m, n_inner=n_inner)
+        te = [f"{c}_te" for c in keys]
+        cats = [c for c in CAT_COLS if c in X_tr.columns]
+
+        def prep(X):
+            Z = np.clip(X[te].to_numpy(np.float64), clip, 1 - clip)
+            out = pd.DataFrame(np.log(Z / (1 - Z)), columns=[f"{c}_logit" for c in te], index=X.index)
+            return pd.concat([out, X[BOOL_COLS].astype(np.float64), X[cats]], axis=1)
+
+        P_tr, P_va, P_te = prep(X_tr), prep(X_va), prep(X_te)
+        nums = [c for c in P_tr.columns if c not in cats]
+        pre = make_column_transformer((OneHotEncoder(handle_unknown="ignore"), cats),
+                                      (StandardScaler(), nums))
+        mdl = make_pipeline(pre, LogisticRegression(**lr_p))
+        mdl.fit(P_tr, y_tr)
+        print(f"  keys {len(keys)} | features {P_tr.shape[1]} | C {lr_p['C']} | "
+              f"n_iter {mdl[-1].n_iter_[0]}", flush=True)
+        return mdl.predict_proba(P_va)[:, 1], mdl.predict_proba(P_te)[:, 1]
+
+    return fit_predict
+
+
+MODELS["glm_vte"] = glm_vte
