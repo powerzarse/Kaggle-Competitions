@@ -51,7 +51,39 @@ Neueste oben. Der Researcher leitet daraus neue Hypothesen ab; nichts doppelt te
 - [2026-11-26] LGBM (lr 0.03, 63 Leaves) auf v1: OOF 0.94631, Fold-Std 0.0033. Referenzpunkt.
 
 ## Offen / Hinweise
-- [Z1-Fazit] Feature Engineering für GBDTs auf v1 stagniert (H05 −0.0073, H06 −0.0003). Größte offene Hebel:
+- [2026-11-27 · Researcher Z2] **Warum wir hinter dem Feld liegen – Hauptursache gefunden** (Quellen: Notebooks
+  megayak „S6E11 | Per-Value + Digit TE | Shallow-Tree Stack“ (v1–v18), evgendvorkin „S6E11 | Deep EDA | Wide LM Stack
+  OOF 0.952642“, goodpjw2008 „Board Model + RealMLP“, asteriospanoras „Will the Top Survive Private?“):
+  - **Datenerzeugung**: Zeilen stammen aus einem LLM-Generator (GReaT-artig), der **zuerst das Label zieht** und dann jedes
+    Feld *gegeben dem Label* bei Temperatur ≈ 0.7 schreibt (megayak, Abschnitt 0: Label-first-Modell mit T 0.65–0.75 erklärt
+    die Fraud-Raten je Wert 2–5× besser als die Original-Raten). Folge: (1) Das Signal ist **fast additiv** über die Felder,
+    (2) **jeder exakte Wert und jede Ziffer/jedes Token einer Zahl** (Cents, Ganzzahlteil, Zehner, 1. Nachkommastelle,
+    führende Ziffern, GPT-2-Tokens) trägt eigene Label-Information.
+  - **Probe (eigene Daten, Fold 0, LGBM lr 0.1, Scratch)**: Rohspalten (+Cents als Zahl) 63 Leaves 0.94322 · **4 Leaves 0.94643**
+    (+0.0032) · 16 Leaves 0.94449 · 4 Leaves ohne Cents 0.94587 · + fold-internes Per-Value-TE der 24 Spalten 0.94721 ·
+    **+ Per-Value- und Ziffern-TE (54 Schlüssel, m=20, innere 5-Fold-OOF) 4 Leaves 0.94947** · dasselbe 2 Leaves (Stümpfe)
+    **0.94961** · 8 Leaves 0.94922 · 63 Leaves 0.94571 · + Value-Counts aller Schlüssel 0.94871 (−0.0008 bei lr 0.1).
+    Zum Vergleich unsere Modelle auf Fold 0: 01_lgbm 0.94395, 02_xgb 0.94463, blend_02 0.94506 → **+0.0044…+0.0057 auf
+    Fold 0** allein durch flache Bäume + Ziffern-/Wert-TE. Das deckt die Lücke zum Median (~0.950) vollständig.
+  - Öffentliche CV-gestützte Referenzen: 4-Leaf-LGBM/Tiefe-2-XGB auf TE ≈ 0.9506–0.9507 OOF, GLM (LogReg auf TE-Logits +
+    Joint-Keys + Counts) 0.9508, LGBM mit `init_score` = GLM-Logit („GLM-Boost“) **0.9514 (bestes Einzelmodell)**, Blend 0.9515;
+    evgendvorkin XGB: roh 0.94727 → Ganzzahl+Nachkomma-TE 0.94947 → + exaktes Wert-TE 0.95018 → + Gruppenprofile 0.95028.
+    Mit GPT-2-Zeilen-LM (GPU, 18 GPU-h/Fold für medium) und RealMLP/TabM: breite Stacks ≈ **0.9526 OOF / 0.9531 LB** = CV-Decke.
+  - Kein Widerspruch zu H05/H06: Zahl als *native* Kategorie overfittet (auch megayak: Ziffern als native LGBM-Kategorien
+    0.94567, 5/5 Folds schlechter); TE niedrigkardinaler Kategorien ist redundant. Der Hebel ist **geglättetes OOF-TE
+    hochkardinaler Wert-/Ziffern-Schlüssel + sehr flache Bäume**.
+  - **Public LB > ~0.953 ist Public-Board-Fitting** (Mischen öffentlicher Submission-Dateien entlang LB-Richtungen, „board
+    model“, „zero-fraud zones“, Rank-Extrapolation; ohne OOF). asteriospanoras: der 0.95504-Stand liegt per OOF-Replay ~0.0004
+    *unter* seiner 0.95442-Basis. Für die Spitze (0.960–0.971) gibt es keinen CV-gestützten öffentlichen Beleg → nicht jagen,
+    Private-LB (80 % des Tests) wird umsortieren. Realistisches Ziel: OOF 0.951–0.952.
+- [2026-11-27] **Originaldatensatz** `uditjain13/credit-card-fraud-detection-2026` (CC0, 20 000 Zeilen, 339 Fraud = 1.695 %,
+  gleiche 24 Spalten + `transaction_id`): **0 exakte Zeilen-Matches** train↔orig, test↔orig, train↔test; 0 Duplikate in train/test.
+  Werte werden wiederverwendet (97 % der train-Zeilen haben einen amount_usd-Wert aus orig, 85 % bei account_balance_usd).
+  Probe Fold 0, LGBM 63 Leaves lr 0.1: + Original als Zusatz-Trainingszeilen 0.94315 vs. 0.94322 (−0.00007) → **bringt nichts**
+  (megayak: LogReg auf Original als Stack-Input −0.000016). Verteilungen weichen ab (u. a. Distanz-Tail, Stunde, Alter).
+- [2026-11-27] **Kein Train/Test-Drift**: Adversarial Validation (LGBM, 25 % Holdout) AUC 0.5008. id train 0–699 959, test
+  699 960–999 943. Keine Duplikate → keine Leak-/Duplikat-Hebel.
+- [Z1-Fazit, **überholt durch Z2-Befund oben**: der Hebel ist Wert-/Ziffern-TE + flache Bäume] Feature Engineering für GBDTs auf v1 stagniert (H05 −0.0073, H06 −0.0003). Größte offene Hebel:
   GBDT-Tuning (H07) und diverse, starke Nicht-GBDT-Modelle (H13, MLP) für den Blend.
 - Fold-Std (0.0033) ist groß gegenüber typischen Gewinnen → Vergleiche immer gepaart auf
   denselben Folds (OOF-AUC), nicht über Fold-Mittelwerte.
