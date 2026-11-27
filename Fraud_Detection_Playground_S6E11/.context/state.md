@@ -4,6 +4,6 @@
 - Bestes Einzelmodell: 02_xgb_v1 CV 0.94653 (LB –)
 - Bester Blend: blend_02 CV 0.94698 (LB –, nicht eingereicht)
 - Beste eingereichte CV: 0.94689 (blend_hc, LB 0.94683)
-- Laufende Jobs: Researcher „LB-Lücke“ (Notebooks, Diskussionen, Originaldaten)
-- Nächster Schritt: Befunde des Researchers → P0-Hypothesen umsetzen; Tuning (H07) zurückgestellt
+- Laufende Jobs: Experimenter H14 → 07_lgbm_v6_l4, 08_lgbm_v6_l2 (Wert-/Ziffern-TE + flache Bäume)
+- Nächster Schritt: H14 reviewen → bei OOF ≥ 0.9495 einreichen (Freigabe); dann H15 (XGB d2 + GLM), H16 (GLM-Boost), Blend
 - Offene Fragen an den Menschen: keine
