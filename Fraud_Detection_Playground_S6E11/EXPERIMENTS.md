@@ -15,3 +15,4 @@
 | 2026-11-27 | 09_xgb_v6_d2 | v6 | xgb_vte | 0.95016 | 0.00333 |  | H15a: XGB depth 2 auf v6-TE (Blend-Partner zu 07) |
 | 2026-11-27 | 10_glm_v6 | v6 | glm_vte | 0.95010 | 0.00335 |  | H15b: GLM auf logit(v6-TE) + Flags + One-Hot, C=1 (Blend-Partner zu 07) |
 | 2026-11-27 | blend_03 | - | rank-blend | 0.95061 | 0.00342 |  | 2 Modelle |
+| 2026-11-27 | 11_glmboost_v6 | v6 | glmboost_vte | 0.95059 | 0.00328 |  | H16: GLM-Boost – LGBM L4 mit init_score = GLM-Logit (innere OOF, Variante A) auf v6-TE |
