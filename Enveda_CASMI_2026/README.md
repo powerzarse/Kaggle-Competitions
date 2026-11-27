@@ -68,6 +68,8 @@ pip install kaggle
 | 26.11. | `vt_0509` (ishankarnick, unverändert) | 0.509 |
 | 26.11. | `frigid_r2` v5 (Baustein B, Rang 2) | 0.509 |
 | 26.11. | `frigid_r3` (Baustein B, Rang 3) | 0.509 |
+| 27.11. | `frigid_focus_r1` (B2, schwache Gruppe, Rang 1 ab Sim 0.9) | 0.509 |
+| 27.11. | `frigid_focus_r2` (B2, schwache Gruppe, Rang 2) | 0.509 |
 
 ## Stand 17.11.2026
 - 5.448 Teams. Bronze-Grenze 0.492 (Rang 544), Silber 0.492 (Rang 272), Gold 0.504 (Rang 20).
@@ -160,3 +162,12 @@ Baustein B: rund 80 Minuten.
   Molekül sichtbar verbessert (oder Gewinne und Verluste heben sich auf). Ob die Zusammenführung im Bewertungslauf
   überhaupt Kandidaten eingefügt hat, ist von außen nicht sichtbar (Logs von Bewertungsläufen sind nicht abrufbar).
 - 6.076 Teams, eigener Rang 938 (0.509). Silber/Bronze 0.509 (960 Teams dort), Gold 0.522. Neue Abgaben brauchen ≥ 0.510.
+
+## Stand 27.11.2026
+- Baustein B2 (FRIGID nur für die schwache Gruppe): Rang-1- und Rang-2-Variante beide 0.509, wie die Kontrolle. Auch die
+  Rang-1-Regel hat auf den ~125 Public-Molekülen nichts sichtbar verändert: Entweder erreicht FRIGID dort selten eine
+  Ähnlichkeit ≥ 0.9, oder die Treffer sind nicht die richtigen Strukturen. Von außen nicht unterscheidbar, weil die Logs
+  der Bewertungsläufe nicht abrufbar sind.
+- Fazit Bausteine A, B, B2: Alle technisch lauffähig, keiner bewegt den Public Score. Weitere GPU-Zeit in diese Richtung
+  lohnt sich ohne eigene Validierungsmöglichkeit nicht.
+- 6.129 Teams, eigener Rang 1.002 (0.509). Silber/Bronze 0.509 (1.082 Teams), ab 0.510 nur 191 Teams, Gold 0.522.
